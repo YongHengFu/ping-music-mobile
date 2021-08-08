@@ -40,7 +40,8 @@
     "@tarojs/plugin-html": "^3.3.2",
     "@tarojs/runtime": "3.3.2",
     "@tarojs/taro": "3.3.2",
-    "vue": "^3.0.0"
+    "vue": "^3.0.0",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
