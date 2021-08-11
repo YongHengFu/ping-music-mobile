@@ -38,9 +38,11 @@
           :text="item.name"
           :number="item.playCount"
           :class="$style.item"
+          @click="playListAll(item.id)"
         />
       </div>
     </div>
+    <ControlBar />
   </div>
 </template>
 
@@ -48,6 +50,7 @@
 import { defineComponent, onMounted, ref } from 'vue'
 import Banner from '@/components/Banner.vue'
 import Cover from '@/components/Cover.vue'
+import ControlBar from '@/components/ControlBar.vue'
 import searchIcon from '@/assets/icons/search.png'
 import radio from '@/assets/icons/radio.png'
 import daily from '@/assets/icons/daily.png'
@@ -55,12 +58,14 @@ import rank from '@/assets/icons/rank.png'
 import playlist from '@/assets/icons/playlist.png'
 import newsong from '@/assets/icons/newsong.png'
 import { getRcmdPlayList } from '@/api/music'
+import { playList } from '@/utils/musicList'
 
 export default defineComponent({
   name: 'Music',
   components: {
     Banner,
-    Cover
+    Cover,
+    ControlBar
   },
   setup() {
     const rcmdPlayList = ref([])
@@ -71,6 +76,10 @@ export default defineComponent({
           rcmdPlayList.value = res.result
         }
       })
+    }
+
+    const playListAll = (id:string) => {
+      playList(id)
     }
 
     onMounted(() => {
@@ -84,7 +93,8 @@ export default defineComponent({
       rank,
       playlist,
       newsong,
-      rcmdPlayList
+      rcmdPlayList,
+      playListAll
     }
   }
 })

@@ -15,3 +15,21 @@ export function getRcmdPlayList() {
     method: 'get'
   })
 }
+
+// 根据id获取歌单详情
+export function getListById(data:object) {
+  return request({
+    url: '/playlist/detail',
+    method: 'get',
+    data
+  })
+}
+
+// 根据id获取音乐详情
+export function getMusicDetail(data:object) {
+  return request({
+    url: '/song/detail',
+    method: 'get',
+    data
+  })
+}
