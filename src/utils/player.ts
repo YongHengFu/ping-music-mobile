@@ -15,7 +15,11 @@ const next = () => {
           Store.commit('setCurrIndex', index)
         }
       }
-      player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+      if (musicList[index].canPlay.able) {
+        player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+      } else {
+        next()
+      }
     }
   }
 }
@@ -33,7 +37,11 @@ const prev = () => {
           Store.commit('setCurrIndex', index)
         }
       }
-      player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+      if (musicList[index].canPlay.able) {
+        player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+      } else {
+        prev()
+      }
     }
   }
 }
@@ -48,16 +56,32 @@ const switchMode = () => {
   }
 }
 
+const playByIndex = () => {
+  return (index:number) => {
+    const musicList = Taro.getStorageSync('musicList')
+    if (musicList) {
+      if (musicList[index].canPlay.able) {
+        player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+        Store.commit('setCurrIndex', index)
+      } else {
+        Taro.showToast({
+          title: musicList[index].canPlay.msg
+        })
+      }
+    }
+  }
+}
+
 const player = {
   audio: Taro.createInnerAudioContext(),
   mode: 0,
   randList: [],
   next: next(),
   prev: prev(), // 0:列表循环 1：顺序播放 2：随机播放 3：单曲循环
-  switchMode: switchMode()
+  switchMode: switchMode(),
+  playByIndex: playByIndex()
 }
 player.audio.autoplay = true
-// player.audio.src = 'https://music.163.com/song/media/outer/url?id=1353301300.mp3'
 player.audio.onTimeUpdate(() => {
   Store.commit('setCurrTime', player.audio.currentTime)
 })
