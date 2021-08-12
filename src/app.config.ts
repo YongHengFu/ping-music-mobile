@@ -12,6 +12,7 @@ export default {
   },
   tabBar: {
     backgroundColor: '#FFF',
+    borderStyle: 'white',
     list: [
       {
         pagePath: 'pages/music/music',
