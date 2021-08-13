@@ -2,7 +2,7 @@
   <div :class="$style['control-bar']">
     <div :class="$style.bar">
       <img :src="image" :class="$style.cover">
-      <img :src="iconVinly" :class="[$style.vinly, {[$style['vinly-rotate']]:state}]">
+      <img :src="iconVinyl" :class="[$style.vinyl, {[$style['vinyl-rotate']]:state}]">
       <span :class="$style.text">{{ text }}</span>
       <div :class="$style['right-icon']">
         <img v-if="state" :src="iconPause" :class="$style.pause" @click="pause">
@@ -19,7 +19,7 @@ import { computed, defineComponent, onMounted, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import player from '@/utils/player'
 import MusicList from '@/components/MusicList.vue'
-import iconVinly from '@/assets/icons/vinyl.png'
+import iconVinyl from '@/assets/icons/vinyl.png'
 import iconPlay from '@/assets/icons/play-mini.png'
 import iconPause from '@/assets/icons/pause-mini.png'
 import iconMusicList from '@/assets/icons/music-list.png'
@@ -36,18 +36,6 @@ export default defineComponent({
     const image = ref('')
     const text = ref('PingMusic')
     const currIndex = computed(() => store.state.currIndex)
-
-    watch(showList, () => {
-      if (showList.value) {
-        Taro.hideTabBar({
-          animation: true
-        })
-      } else {
-        Taro.showTabBar({
-          animation: true
-        })
-      }
-    })
 
     const play = () => {
       player.audio.play()
@@ -76,7 +64,7 @@ export default defineComponent({
       })
     })
     return {
-      iconVinly,
+      iconVinyl,
       iconPlay,
       iconPause,
       iconMusicList,
@@ -99,7 +87,8 @@ export default defineComponent({
   right: 30px;
   .bar{
     border-radius: 50px;
-    background: rgba(122, 109, 193, 0.89);
+    background: #1cdf9f;
+    //background: rgba(122, 109, 193, 0.89);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -113,14 +102,14 @@ export default defineComponent({
       border-radius: 10px;
       z-index: 2;
     }
-    .vinly{
+    .vinyl{
       min-width: 60px;
       max-width: 60px;
       height: 60px;
       transition: margin-left 0.5s linear;
       margin-left: 40px;
     }
-    .vinly-rotate{
+    .vinyl-rotate{
       margin-left: 55px;
       animation: rotate infinite 1s linear;
       z-index: 1;
