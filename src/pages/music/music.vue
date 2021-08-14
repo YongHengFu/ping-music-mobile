@@ -1,9 +1,6 @@
 <template>
-  <div :class="$style['page-music']">
-    <div :class="$style.search">
-      <img :src="searchIcon" :class="$style.icon">
-      <input type="text" placeholder="搜索你想找的音乐" :class="$style.input">
-    </div>
+  <div :class="$style['page-music']" :style="pageStyle">
+    <NavigationBar />
     <Banner />
     <div :class="$style['icon-list']">
       <div :class="$style.item">
@@ -48,10 +45,10 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
+import NavigationBar from '@/pages/music/NavigationBar.vue'
 import Banner from '@/components/Banner.vue'
 import Cover from '@/components/Cover.vue'
 import ControlBar from '@/components/ControlBar.vue'
-import searchIcon from '@/assets/icons/search.png'
 import radio from '@/assets/icons/radio.png'
 import daily from '@/assets/icons/daily.png'
 import rank from '@/assets/icons/rank.png'
@@ -59,17 +56,21 @@ import playlist from '@/assets/icons/playlist.png'
 import newsong from '@/assets/icons/newsong.png'
 import { getRcmdPlayList } from '@/api/music'
 import { playList } from '@/utils/musicList'
+import { navigationBarHeight } from '@/utils/navigationBarInfo'
 
 export default defineComponent({
   name: 'Music',
   components: {
+    NavigationBar,
     Banner,
     Cover,
     ControlBar
   },
   setup() {
+    const pageStyle = {
+      'margin-top': `${navigationBarHeight + 10}px`
+    }
     const rcmdPlayList = ref([])
-
     const getRcmdPlayListData = () => {
       getRcmdPlayList().then((res:any) => {
         if (res.code === 200) {
@@ -87,7 +88,7 @@ export default defineComponent({
     })
 
     return {
-      searchIcon,
+      pageStyle,
       radio,
       daily,
       rank,
@@ -108,24 +109,6 @@ export default defineComponent({
     margin-left: 30px;
     margin-bottom: 15px;
     font-weight: bold;
-  }
-
-  .search{
-    display: flex;
-    align-items: center;
-    color: #868686;
-    background: #f6f6f6;
-    border-radius: 30px;
-    margin: 20px 30px;
-    padding: 10px 20px;
-    .icon{
-      width: 35px;
-      height: 35px;
-      margin-right: 10px;
-    }
-    .input{
-      outline: none;
-    }
   }
 
   .icon-list{
