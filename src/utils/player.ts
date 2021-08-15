@@ -82,9 +82,6 @@ const player = {
   playByIndex: playByIndex()
 }
 player.audio.autoplay = true
-player.audio.onTimeUpdate(() => {
-  Store.commit('setCurrTime', player.audio.currentTime)
-})
 player.audio.onEnded(() => {
   player.next()
 })

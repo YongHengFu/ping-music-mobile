@@ -2,7 +2,8 @@ export default {
   pages: [
     'pages/music/music',
     'pages/video/video',
-    'pages/personal/personal'
+    'pages/personal/personal',
+    'pages/playView/playView'
   ],
   window: {
     backgroundTextStyle: 'light',

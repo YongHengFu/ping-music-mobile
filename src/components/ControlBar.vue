@@ -1,21 +1,21 @@
 <template>
-  <div :class="$style['control-bar']">
+  <div :class="$style['control-bar']" @click="goToPlayView">
     <div :class="$style.bar">
       <img :src="image" :class="$style.cover">
       <img :src="iconVinyl" :class="[$style.vinyl, {[$style['vinyl-rotate']]:state}]">
       <span :class="$style.text">{{ text }}</span>
       <div :class="$style['right-icon']">
-        <img v-if="state" :src="iconPause" :class="$style.pause" @click="pause">
-        <img v-else :src="iconPlay" :class="$style.play" @click="play">
-        <img :src="iconMusicList" :class="$style.list" @click="showList=true">
+        <img v-if="state" :src="iconPause" :class="$style.pause" @click.stop="pause">
+        <img v-else :src="iconPlay" :class="$style.play" @click.stop="play">
+        <img :src="iconMusicList" :class="$style.list" @click.stop="showList=true">
       </div>
     </div>
-    <MusicList v-if="showList" @close="showList=false" />
   </div>
+  <MusicList v-if="showList" @close="showList=false" />
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
 import player from '@/utils/player'
 import MusicList from '@/components/MusicList.vue'
@@ -42,6 +42,11 @@ export default defineComponent({
     }
     const pause = () => {
       player.audio.pause()
+    }
+    const goToPlayView = () => {
+      Taro.navigateTo({
+        url: '/pages/playView/playView'
+      })
     }
     onMounted(() => {
       player.audio.onPlay(() => {
@@ -73,7 +78,8 @@ export default defineComponent({
       image,
       text,
       play,
-      pause
+      pause,
+      goToPlayView
     }
   }
 })

@@ -37,6 +37,7 @@ export default defineComponent({
     const state = ref(true)
     const currIndex = computed(() => store.state.currIndex)
     const musicList = ref([])
+    const route = Taro.getCurrentPages()[Taro.getCurrentPages().length - 1].route
     let pageY = 0
     let move = 0
     let opacity = 0
@@ -50,9 +51,13 @@ export default defineComponent({
     musicList.value = Taro.getStorageSync('musicList') || []
     const close = () => {
       state.value = false
-      Taro.showTabBar({
-        animation: true
-      })
+      if (route === 'pages/music/music') {
+        Taro.showTabBar({
+          animation: true,
+          fail: () => {
+          }
+        })
+      }
       setTimeout(() => {
         ctx.emit('close')
       }, 300)
@@ -78,11 +83,15 @@ export default defineComponent({
         contentStyle.value.transition = 'transform 0.3s, background 0.3s'
         maskStyle.value.background = 'rgba(28, 28, 28,0)'
         contentStyle.value.transform = `translateY(${100}%)`
-        setTimeout(() => {
-          Taro.showTabBar({
-            animation: false
-          })
-        }, 200)
+        if (route === 'pages/music/music') {
+          setTimeout(() => {
+            Taro.showTabBar({
+              animation: false,
+              fail: () => {
+              }
+            })
+          }, 200)
+        }
         setTimeout(() => {
           ctx.emit('close')
         }, 300)
@@ -93,11 +102,15 @@ export default defineComponent({
       }
     }
     onMounted(() => {
-      setTimeout(() => {
-        Taro.hideTabBar({
-          animation: false
-        })
-      }, 50)
+      if (route === 'pages/music/music') {
+        setTimeout(() => {
+          Taro.hideTabBar({
+            animation: false,
+            fail: () => {
+            }
+          })
+        }, 50)
+      }
     })
     return {
       state,
