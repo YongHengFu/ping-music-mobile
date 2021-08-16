@@ -16,7 +16,9 @@ const next = () => {
         }
       }
       if (musicList[index].canPlay.able) {
+        player.audio.stop()
         player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+        player.audio.play()
       } else {
         next()
       }
@@ -38,7 +40,9 @@ const prev = () => {
         }
       }
       if (musicList[index].canPlay.able) {
+        player.audio.stop()
         player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
+        player.audio.play()
       } else {
         prev()
       }
