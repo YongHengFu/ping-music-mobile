@@ -11,6 +11,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import Music from '@/pages/playView/components/Music.vue'
+import Lyric from '@/pages/playView/components/Lyric.vue'
 import NavigationBar from '@/pages/playView/components/NavigationBar.vue'
 import { navigationBarHeight } from '@/utils/navigationBarInfo'
 import player from '@/utils/player'
@@ -20,7 +21,8 @@ export default defineComponent({
   name: 'PlayView',
   components: {
     NavigationBar,
-    Music
+    Music,
+    Lyric
   },
   setup() {
     const store = useStore()

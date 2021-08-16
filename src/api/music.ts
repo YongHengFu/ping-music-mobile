@@ -33,3 +33,12 @@ export function getMusicDetail(data:object) {
     data
   })
 }
+
+// 根据id获取歌词
+export function getLyricById(data:object) {
+  return request({
+    url: '/lyric',
+    method: 'get',
+    data
+  })
+}
