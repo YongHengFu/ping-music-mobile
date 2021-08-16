@@ -15,7 +15,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
+import { useStore } from 'vuex'
 import { throttle } from '@/utils/frequency'
 import Taro from '@tarojs/taro'
 import player from '@/utils/player'
@@ -24,6 +25,8 @@ import timeFormat from '@/utils/timeFormat'
 export default defineComponent({
   name: 'ProgressBar',
   setup() {
+    const store = useStore()
+    const currIndex = computed(() => store.state.currIndex)
     const barStyle = ref({
       right: `${50}%`
     })
@@ -37,7 +40,6 @@ export default defineComponent({
     let right = 0
 
     const touchstart = (e) => {
-      console.log(totalTime.value)
       auto = false
       offsetLeft = e.mpEvent.target.offsetLeft
       barWidth = screenWidth - 2 * offsetLeft
@@ -51,16 +53,21 @@ export default defineComponent({
     const moveAction = (e) => {
       const moveX = e.touches[0].pageX
       right = (1 - (moveX - offsetLeft) / barWidth) * 100
+      right = right < 0 ? 0 : (right > 100 ? 100 : right)
       barStyle.value.right = `${right}%`
+      currTime.value = (1 - right / 100) * totalTime.value
     }
     const touchend = () => {
-      auto = true
       player.audio.seek((1 - right / 100) * totalTime.value)
+      auto = true
     }
     onMounted(() => {
-      player.audio.onPlay(() => {
-        totalTime.value = player.audio.duration
-        currTime.value = 0
+      player.audio.onCanplay(() => {
+        player.audio.duration
+        const musicList = Taro.getStorageSync('musicList')
+        if (musicList) {
+          totalTime.value = musicList[currIndex.value].duration
+        }
       })
       player.audio.onTimeUpdate(() => {
         if (auto) {
