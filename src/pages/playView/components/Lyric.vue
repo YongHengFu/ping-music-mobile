@@ -8,17 +8,24 @@
         </span>
       </div>
     </div>
-    <scroll-view :scroll-y="true" :class="$style['lyric-wrapper']">
-      <span v-for="(item,index) of lyricList" :key="item.time" :class="$style['lyric']">{{ item.lyric }}</span>
+    <scroll-view :scroll-y="true" :scroll-into-view="'lyric'+(currLyricIndex-1)" :scroll-with-animation="true" :style="scrollViewStyle" :class="$style['lyric-wrapper']">
+      <span v-for="(item,index) of lyricList" :id="'lyric'+index" :key="item.time" :class="$style['lyric']">
+        <span :style="index===currLyricIndex?currStyle:prevStyle" :class="$style.text">{{ item.lyric }}</span>
+      </span>
+      <div :class="$style.placeholder" />
     </scroll-view>
     <div :class="$style.botton" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent, nextTick, onMounted, ref } from 'vue'
 import player from '@/utils/player'
 import { getLyricById } from '@/api/music'
+import { throttle } from '@/utils/frequency'
+import Taro from '@tarojs/taro'
+import { useStore } from 'vuex'
+import { navigationBarHeight } from '@/utils/navigationBarInfo'
 
 export default defineComponent({
   name: 'Lyric',
@@ -26,12 +33,21 @@ export default defineComponent({
     musicInfo: Object
   },
   setup(props, ctx) {
-    const lyricList = ref([])
-
-    onMounted(() => {
-      if (props.musicInfo?.id) {
-        getLyricStr(props.musicInfo.id)
-      }
+    const store = useStore()
+    const currIndex = computed(() => store.state.currIndex)
+    let totalTime = 0
+    const lyricList = ref([] as any)
+    const currLyricIndex = ref(0)
+    const scrollViewStyle = {
+      'height': `${(Taro.getSystemInfoSync().screenHeight - navigationBarHeight - 120)}px`
+    }
+    const prevStyle = {
+      'transition': 'font-size 0.3s'
+    }
+    const currStyle = ref({
+      'transition': '',
+      'font-size': '20px',
+      'background-size': '0'
     })
 
     const getLyricStr = (id:string) => {
@@ -108,8 +124,42 @@ export default defineComponent({
       }
       lyricList.value = list
     }
+
+    const autoScroll = (currTime:number) => {
+      if (currLyricIndex.value < lyricList.value.length - 1) {
+        if (currTime > lyricList.value[currLyricIndex.value + 1].time) {
+          currLyricIndex.value++
+          let time = 0
+          if (currLyricIndex.value < lyricList.value.length - 1) {
+            time = lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time
+          } else {
+            time = totalTime - lyricList.value[currLyricIndex.value].time
+          }
+          currStyle.value.transition = `background-size ${time}s ease-out`
+          currStyle.value['background-size'] = '100%'
+        }
+      }
+    }
+
+    onMounted(() => {
+      if (props.musicInfo?.id) {
+        getLyricStr(props.musicInfo.id)
+      }
+      const musicList = Taro.getStorageSync('musicList')
+      if (musicList) {
+        totalTime = musicList[currIndex.value].duration
+      }
+      player.audio.onTimeUpdate(() => {
+        throttle(autoScroll(player.audio.currentTime), 500)
+      })
+    })
+
     return {
-      lyricList
+      lyricList,
+      currLyricIndex,
+      scrollViewStyle,
+      currStyle,
+      prevStyle
     }
   }
 })
@@ -119,7 +169,10 @@ export default defineComponent({
 .page-lyric{
   padding: 0 50px;
   .info{
-    padding: 30px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 200px;
     .name{
       font-size: 42px;
       font-weight: bold;
@@ -135,14 +188,25 @@ export default defineComponent({
   }
   .lyric-wrapper{
     width: 100%;
-    height: 1000px;
-    padding: 20% 0 20% 0;
     color: #fff;
-    //max-height: 400px;
     overflow-y: auto;
     .lyric{
       display: block;
-      margin: 20px 0;
+      margin-right: 50px;
+      width: calc(100% - 100px);
+      .text{
+        display: inline;
+        line-height: 70px;
+        font-weight: bold;
+        background: #FFFFFF -webkit-linear-gradient(left, #1dcf9f, #53ecc3) no-repeat 0 0;
+        background-size: 0;
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+    }
+    .placeholder{
+      width: 100%;
+      min-height: 50%;
     }
   }
   .button{
