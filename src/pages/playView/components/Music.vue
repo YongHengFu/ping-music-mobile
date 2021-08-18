@@ -1,6 +1,6 @@
 <template>
   <div :class="$style['page-music']">
-    <div :class="$style.cover" :style="{'background-image':`url(${musicInfo?.album?.picUrl}?param=300y300)`}" />
+    <img :src="`${musicInfo?.album?.picUrl}?param=500y500`" :class="$style.cover" mode="widthFix">
     <div :class="$style.info">
       <div>
         <span :class="$style['music-name']">{{ musicInfo?.name }}</span>
@@ -12,7 +12,7 @@
       </div>
     </div>
     <div :class="$style.control">
-      <ProgressBar :class="$style['progress-bar']"/>
+      <ProgressBar :class="$style['progress-bar']" />
       <div :class="$style.button">
         <img :src="IconRand" :class="$style.icon1">
         <img :src="IconPrev" :class="$style.icon3" @click="prev">

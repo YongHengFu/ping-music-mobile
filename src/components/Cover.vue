@@ -1,6 +1,6 @@
 <template>
   <div :class="$style.cover">
-    <img :src="image" :class="$style.image"/>
+    <img :src="`${image}?param=300y300`" :class="$style.image" mode="widthFix"/>
     <span :class="$style.number">▶ {{ (number/10000).toFixed(1) }}万</span>
     <span :class="$style.text">{{text}}</span>
   </div>
