@@ -1,8 +1,8 @@
 import Taro from '@tarojs/taro'
 
 export default function request(params) {
-  const baseURL = 'https://music.qier222.com/api'
-  // const baseURL = 'https://ping-music-api.vercel.app'
+  // const baseURL = 'https://music.qier222.com/api'
+  const baseURL = 'https://www.pingmusic.ltd'
   return new Promise((resolve, reject) => {
     Taro.request({
       url: baseURL + params.url,
