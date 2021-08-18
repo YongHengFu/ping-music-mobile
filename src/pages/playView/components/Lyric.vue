@@ -14,18 +14,20 @@
       </span>
       <div :class="$style.placeholder" />
     </scroll-view>
-    <div :class="$style.botton" />
+    <img :src="state?IconPause:IconPlay" :class="$style.botton" @click="state?pause():play()">
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, onMounted, ref } from 'vue'
+import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
 import player from '@/utils/player'
 import { getLyricById } from '@/api/music'
 import { throttle } from '@/utils/frequency'
 import Taro from '@tarojs/taro'
 import { useStore } from 'vuex'
 import { navigationBarHeight } from '@/utils/navigationBarInfo'
+import IconPlay from '@/assets/icons/play.png'
+import IconPause from '@/assets/icons/pause.png'
 
 export default defineComponent({
   name: 'Lyric',
@@ -34,6 +36,8 @@ export default defineComponent({
   },
   setup(props, ctx) {
     const store = useStore()
+    const state = ref(false)
+    let currTime = 0
     const currIndex = computed(() => store.state.currIndex)
     let totalTime = 0
     const lyricList = ref([] as any)
@@ -49,6 +53,40 @@ export default defineComponent({
       'font-size': '20px',
       'background-size': '0'
     })
+
+    // watch(state, () => {
+    //   if (state.value) {
+    //     player.audio.play()
+    //     scrollContinue()
+    //   } else {
+    //     player.audio.pause()
+    //     scrollSuspend()
+    //   }
+    // })
+
+    const pause = () => {
+      player.audio.pause()
+      currStyle.value.transition = `background-size 0s`
+      let prcent = 0
+      if (currLyricIndex.value < lyricList.value.length - 1) {
+        prcent = (currTime - lyricList.value[currLyricIndex.value].time) / (lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time) * 100
+      } else {
+        prcent = (currTime - lyricList.value[currLyricIndex.value].time) / (totalTime - lyricList.value[currLyricIndex.value].time) * 100
+      }
+      currStyle.value['background-size'] = `${prcent}%`
+    }
+
+    const play = () => {
+      player.audio.play()
+      let time = 0
+      if (currLyricIndex.value < lyricList.value.length - 1) {
+        time = lyricList.value[currLyricIndex.value + 1].time - currTime
+      } else {
+        time = totalTime - currTime
+      }
+      currStyle.value.transition = `background-size ${time}s ease-out`
+      currStyle.value['background-size'] = `100%`
+    }
 
     const getLyricStr = (id:string) => {
       getLyricById({ id: id }).then((res:any) => {
@@ -141,7 +179,22 @@ export default defineComponent({
       }
     }
 
+    const getCurrTime = (time:number) => {
+      currTime = time + 1
+    }
+
     onMounted(() => {
+      if (player.audio.paused) {
+        state.value = false
+      } else {
+        state.value = true
+      }
+      player.audio.onPlay(() => {
+        state.value = true
+      })
+      player.audio.onPause(() => {
+        state.value = false
+      })
       if (props.musicInfo?.id) {
         getLyricStr(props.musicInfo.id)
       }
@@ -150,16 +203,23 @@ export default defineComponent({
         totalTime = musicList[currIndex.value].duration
       }
       player.audio.onTimeUpdate(() => {
+        currTime = player.audio.currentTime
+        // throttle(getCurrTime(player.audio.currentTime), 50)
         throttle(autoScroll(player.audio.currentTime), 500)
       })
     })
 
     return {
+      IconPlay,
+      IconPause,
+      state,
       lyricList,
       currLyricIndex,
       scrollViewStyle,
       currStyle,
-      prevStyle
+      prevStyle,
+      pause,
+      play
     }
   }
 })
@@ -209,8 +269,12 @@ export default defineComponent({
       min-height: 50%;
     }
   }
-  .button{
-
+  .botton{
+    position: fixed;
+    right: 50px;
+    bottom: 50px;
+    width: 80px;
+    height: 80px;
   }
 }
 </style>
