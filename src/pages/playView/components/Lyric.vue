@@ -14,7 +14,7 @@
       </span>
       <div :class="$style.placeholder" />
     </scroll-view>
-    <img :src="state?IconPause:IconPlay" :class="$style.botton" @click="state=!state">
+    <img :src="state?IconPause:IconPlay" :class="$style.botton" @click="state?pause():play()">
   </div>
 </template>
 
@@ -32,14 +32,24 @@ import IconPause from '@/assets/icons/pause.png'
 export default defineComponent({
   name: 'Lyric',
   props: {
-    musicInfo: Object
+    musicInfo: Object,
+    state: {
+      type: Boolean,
+      required: true
+    },
+    currTime: {
+      type: Number,
+      required: true
+    },
+    totalTime: {
+      type: Number,
+      required: true
+    }
   },
   setup(props, ctx) {
     const store = useStore()
-    const state = ref(false)
-    // let currTime = 0
     const currIndex = computed(() => store.state.currIndex)
-    let totalTime = 0
+    let musicId = ''
     const lyricList = ref([] as any)
     const currLyricIndex = ref(0)
     const scrollViewStyle = {
@@ -54,13 +64,21 @@ export default defineComponent({
       'background-size': '0'
     })
 
-    watch(state, () => {
-      if (state.value) {
-        player.audio.play()
-      } else {
-        player.audio.pause()
+    watch(props, () => {
+      if (props.musicInfo?.id !== musicId) {
+        musicId = props.musicInfo?.id
+        getLyricStr(musicId)
       }
+      throttle(autoScroll(props.currTime), 100)
     })
+
+    const play = () => {
+      player.audio.play()
+    }
+
+    const pause = () => {
+      player.audio.pause()
+    }
 
     const scrollSuspend = (currTime:number) => {
       currStyle.value.transition = `background-size 0s`
@@ -68,9 +86,9 @@ export default defineComponent({
       if (currLyricIndex.value < lyricList.value.length - 1) {
         percent = (currTime - lyricList.value[currLyricIndex.value].time) / (lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time) * 100
       } else {
-        percent = (currTime - lyricList.value[currLyricIndex.value].time) / (totalTime - lyricList.value[currLyricIndex.value].time) * 100
+        percent = (currTime - lyricList.value[currLyricIndex.value].time) / (props.totalTime - lyricList.value[currLyricIndex.value].time) * 100
       }
-      currStyle.value['background-size'] = `${percent.toFixed(2)}%`
+      currStyle.value['background-size'] = `${percent}%`
     }
 
     const scrollContinue = (currTime:number) => {
@@ -78,9 +96,9 @@ export default defineComponent({
       if (currLyricIndex.value < lyricList.value.length - 1) {
         time = lyricList.value[currLyricIndex.value + 1].time - currTime
       } else {
-        time = totalTime - currTime
+        time = props.totalTime - currTime
       }
-      currStyle.value.transition = `background-size ${time}s ease-out`
+      currStyle.value.transition = `background-size ${time}s linear`
       currStyle.value['background-size'] = `100%`
     }
 
@@ -157,6 +175,7 @@ export default defineComponent({
         }
       }
       lyricList.value = list
+      currLyricIndex.value = 0
     }
 
     const autoScroll = (currTime:number) => {
@@ -167,49 +186,41 @@ export default defineComponent({
           if (currLyricIndex.value < lyricList.value.length - 1) {
             time = lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time
           } else {
-            time = totalTime - lyricList.value[currLyricIndex.value].time
+            time = props.totalTime - lyricList.value[currLyricIndex.value].time
           }
-          currStyle.value.transition = `background-size ${parseFloat(time.toFixed(2))}s ease-out`
+          currStyle.value.transition = `background-size ${time}s linear`
           currStyle.value['background-size'] = '100%'
         }
       }
     }
 
     onMounted(() => {
-      if (player.audio.paused) {
-        state.value = false
-      } else {
-        state.value = true
-      }
-      player.audio.onPlay(() => {
-        scrollContinue(parseFloat(player.audio.currentTime.toFixed(2)))
-        state.value = true
-      })
-      player.audio.onPause(() => {
-        scrollSuspend(parseFloat(player.audio.currentTime.toFixed(2)))
-        state.value = false
-      })
-      if (props.musicInfo?.id) {
-        getLyricStr(props.musicInfo.id)
-      }
-      const musicList = Taro.getStorageSync('musicList')
-      if (musicList) {
-        totalTime = musicList[currIndex.value].duration
-      }
-      player.audio.onTimeUpdate(() => {
-        throttle(autoScroll(player.audio.currentTime), 100)
-      })
+      // if (player.audio.paused) {
+      //   state.value = false
+      // } else {
+      //   state.value = true
+      // }
+      // player.audio.onPlay(() => {
+      //   scrollContinue(player.audio.currentTime)
+      // })
+      // player.audio.onPause(() => {
+      //   scrollSuspend(player.audio.currentTime)
+      // })
+      // if (props.musicInfo?.id) {
+      //   getLyricStr(props.musicInfo.id)
+      // }
     })
 
     return {
       IconPlay,
       IconPause,
-      state,
       lyricList,
       currLyricIndex,
       scrollViewStyle,
       currStyle,
-      prevStyle
+      prevStyle,
+      play,
+      pause
     }
   }
 })
@@ -227,6 +238,10 @@ export default defineComponent({
       font-size: 42px;
       font-weight: bold;
       color: #fff;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
     }
     .artists{
       display: flex;

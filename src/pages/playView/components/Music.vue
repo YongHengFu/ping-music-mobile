@@ -12,11 +12,11 @@
       </div>
     </div>
     <div :class="$style.control">
-      <ProgressBar :class="$style['progress-bar']" />
+      <ProgressBar :class="$style['progress-bar']" :curr-time="currTime" :total-time="totalTime" @moving="moving" />
       <div :class="$style.button">
         <img :src="IconRand" :class="$style.icon1">
         <img :src="IconPrev" :class="$style.icon3" @click="prev">
-        <img :src="state?IconPause:IconPlay" :class="$style.icon2" @click="state=!state">
+        <img :src="state?IconPause:IconPlay" :class="$style.icon2" @click="state?pause():play()">
         <img :src="IconNext" :class="$style.icon3" @click="next">
         <img :src="IconList" :class="$style.icon1" @click="showList=true">
       </div>
@@ -48,39 +48,43 @@ export default defineComponent({
     ProgressBar
   },
   props: {
-    musicInfo: Object
+    musicInfo: Object,
+    state: {
+      type: Boolean,
+      required: true
+    },
+    currTime: {
+      type: Number,
+      required: true
+    },
+    totalTime: {
+      type: Number,
+      required: true
+    }
   },
   setup(props, ctx) {
-    const state = ref(false)
     const showList = ref(false)
-    watch(state, () => {
-      if (state.value) {
-        player.audio.play()
-      } else {
-        player.audio.pause()
-      }
-    })
+
+    const play = () => {
+      player.audio.play()
+    }
+
+    const pause = () => {
+      player.audio.pause()
+    }
 
     const prev = () => {
       player.prev()
     }
+
     const next = () => {
       player.next()
     }
 
-    onMounted(() => {
-      if (player.audio.paused) {
-        state.value = false
-      } else {
-        state.value = true
-      }
-      player.audio.onPlay(() => {
-        state.value = true
-      })
-      player.audio.onPause(() => {
-        state.value = false
-      })
-    })
+    const moving = (value:boolean) => {
+      ctx.emit('moving', value)
+    }
+
     return {
       IconPlay,
       IconPause,
@@ -91,10 +95,12 @@ export default defineComponent({
       IconLoop,
       IconSingle,
       IconList,
-      state,
       showList,
+      play,
+      pause,
       prev,
-      next
+      next,
+      moving
     }
   }
 })
@@ -155,8 +161,8 @@ export default defineComponent({
         height: 40px;
       }
       .icon2{
-        width: 90px;
-        height: 90px;
+        width: 100px;
+        height: 100px;
       }
       .icon3{
         width: 70px;

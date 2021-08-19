@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style['progress-bar']">
+  <div :class="$style['progress-bar']" :catch-move="true">
     <div :class="$style.bar" @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend">
       <div :class="$style['bar-total']">
         <div :class="$style['bar-curr']" :style="barStyle">
@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent, onMounted, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import { throttle } from '@/utils/frequency'
 import Taro from '@tarojs/taro'
@@ -24,14 +24,20 @@ import timeFormat from '@/utils/timeFormat'
 
 export default defineComponent({
   name: 'ProgressBar',
-  setup() {
-    const store = useStore()
-    const currIndex = computed(() => store.state.currIndex)
+  props: {
+    currTime: {
+      type: Number,
+      required: true
+    },
+    totalTime: {
+      type: Number,
+      required: true
+    }
+  },
+  setup(props, ctx) {
     const barStyle = ref({
-      right: `${50}%`
+      right: `${100}%`
     })
-    const currTime = ref(0)
-    const totalTime = ref(0)
     let auto = true
     let offsetLeft = 0
     const screenWidth = Taro.getSystemInfoSync().screenWidth
@@ -39,8 +45,16 @@ export default defineComponent({
     let startX = 0
     let right = 0
 
+    watch(props, () => {
+      if (auto) {
+        // currTime.value = player.audio.currentTime
+        barStyle.value.right = `${(1 - props.currTime / props.totalTime) * 100}%`
+      }
+    })
+
     const touchstart = (e) => {
       auto = false
+      ctx.emit('moving', true)
       offsetLeft = e.mpEvent.target.offsetLeft
       barWidth = screenWidth - 2 * offsetLeft
       startX = e.touches[0].pageX
@@ -55,31 +69,16 @@ export default defineComponent({
       right = (1 - (moveX - offsetLeft) / barWidth) * 100
       right = right < 0 ? 0 : (right > 100 ? 100 : right)
       barStyle.value.right = `${right}%`
-      currTime.value = (1 - right / 100) * totalTime.value
+      // currTime.value = (1 - right / 100) * totalTime.value
     }
     const touchend = () => {
-      player.audio.seek((1 - right / 100) * totalTime.value)
+      ctx.emit('moving', false)
+      player.audio.seek((1 - right / 100) * props.totalTime)
       auto = true
     }
-    onMounted(() => {
-      player.audio.onCanplay(() => {
-        player.audio.duration
-        const musicList = Taro.getStorageSync('musicList')
-        if (musicList) {
-          totalTime.value = musicList[currIndex.value].duration
-        }
-      })
-      player.audio.onTimeUpdate(() => {
-        if (auto) {
-          currTime.value = player.audio.currentTime
-          barStyle.value.right = `${(1 - currTime.value / totalTime.value) * 100}%`
-        }
-      })
-    })
+
     return {
       barStyle,
-      currTime,
-      totalTime,
       touchstart,
       touchmove,
       touchend,
@@ -94,11 +93,11 @@ export default defineComponent({
   width: 100%;
   .bar{
     width: 100%;
-    height: 25px;
+    height: 50px;
     position: relative;
     .bar-total{
       width: 100%;
-      height: 5px;
+      height: 8px;
       background: #686868a0;
       position: absolute;
       left: 0;
@@ -107,18 +106,18 @@ export default defineComponent({
       transform: translateY(-50%);
       border-radius: 100px;
       .bar-curr{
-        height: 5px;
+        height: 8px;
         background: #fff;
         position: absolute;
         top: 0;
         bottom: 0;
         left: 0;
-        right: 20%;
+        right: 100%;
         border-radius: 100px;
         pointer-events: none;
         .slider{
-          width: 10px;
-          height: 10px;
+          width: 26px;
+          height: 26px;
           border-radius: 50%;
           background: #fff;
           position: absolute;
@@ -133,7 +132,7 @@ export default defineComponent({
   .time{
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
+    //margin-top: 10px;
     font-size: 20px;
     color: #ccc;
   }

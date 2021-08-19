@@ -11,13 +11,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import Capsule from '@/components/Capsule.vue'
 import { statusBarHeight, navigationBarHeight, pageWith, menuBarWidth } from '@/utils/navigationBarInfo'
 export default defineComponent({
   name: 'NavigationBar',
   components: {
     Capsule
+  },
+  props: {
+    currTabIndex: Number
   },
   setup(props, ctx) {
     const navigationBarStyle = {
@@ -33,12 +36,16 @@ export default defineComponent({
       { title: '歌曲', name: 'Music' },
       { title: '歌词', name: 'Lyric' }
     ]
-    const currIndex = ref(1)
+    const currIndex = ref(props.currTabIndex)
+
+    watch(props, () => {
+      currIndex.value = props.currTabIndex
+    })
 
     const changeTab = (index:number) => {
       if (index !== currIndex.value) {
         currIndex.value = index
-        ctx.emit('changeTab', tabList[currIndex.value].name)
+        ctx.emit('changeTab', currIndex.value)
       }
     }
     return {
@@ -67,7 +74,7 @@ export default defineComponent({
     justify-content: center;
     align-items: center;
     .item{
-      font-size: 24px;
+      font-size: 30px;
       color: #9a9a9aa0;
       .split{
         margin: 0 10px;
