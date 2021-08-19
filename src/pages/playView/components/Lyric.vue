@@ -14,7 +14,7 @@
       </span>
       <div :class="$style.placeholder" />
     </scroll-view>
-    <img :src="state?IconPause:IconPlay" :class="$style.botton" @click="state?pause():play()">
+    <img :src="state?IconPause:IconPlay" :class="$style.botton" @click="state=!state">
   </div>
 </template>
 
@@ -37,7 +37,7 @@ export default defineComponent({
   setup(props, ctx) {
     const store = useStore()
     const state = ref(false)
-    let currTime = 0
+    // let currTime = 0
     const currIndex = computed(() => store.state.currIndex)
     let totalTime = 0
     const lyricList = ref([] as any)
@@ -54,30 +54,26 @@ export default defineComponent({
       'background-size': '0'
     })
 
-    // watch(state, () => {
-    //   if (state.value) {
-    //     player.audio.play()
-    //     scrollContinue()
-    //   } else {
-    //     player.audio.pause()
-    //     scrollSuspend()
-    //   }
-    // })
-
-    const pause = () => {
-      player.audio.pause()
-      currStyle.value.transition = `background-size 0s`
-      let prcent = 0
-      if (currLyricIndex.value < lyricList.value.length - 1) {
-        prcent = (currTime - lyricList.value[currLyricIndex.value].time) / (lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time) * 100
+    watch(state, () => {
+      if (state.value) {
+        player.audio.play()
       } else {
-        prcent = (currTime - lyricList.value[currLyricIndex.value].time) / (totalTime - lyricList.value[currLyricIndex.value].time) * 100
+        player.audio.pause()
       }
-      currStyle.value['background-size'] = `${prcent}%`
+    })
+
+    const scrollSuspend = (currTime:number) => {
+      currStyle.value.transition = `background-size 0s`
+      let percent = 0
+      if (currLyricIndex.value < lyricList.value.length - 1) {
+        percent = (currTime - lyricList.value[currLyricIndex.value].time) / (lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time) * 100
+      } else {
+        percent = (currTime - lyricList.value[currLyricIndex.value].time) / (totalTime - lyricList.value[currLyricIndex.value].time) * 100
+      }
+      currStyle.value['background-size'] = `${percent.toFixed(2)}%`
     }
 
-    const play = () => {
-      player.audio.play()
+    const scrollContinue = (currTime:number) => {
       let time = 0
       if (currLyricIndex.value < lyricList.value.length - 1) {
         time = lyricList.value[currLyricIndex.value + 1].time - currTime
@@ -173,14 +169,10 @@ export default defineComponent({
           } else {
             time = totalTime - lyricList.value[currLyricIndex.value].time
           }
-          currStyle.value.transition = `background-size ${time}s ease-out`
+          currStyle.value.transition = `background-size ${parseFloat(time.toFixed(2))}s ease-out`
           currStyle.value['background-size'] = '100%'
         }
       }
-    }
-
-    const getCurrTime = (time:number) => {
-      currTime = time + 1
     }
 
     onMounted(() => {
@@ -190,9 +182,11 @@ export default defineComponent({
         state.value = true
       }
       player.audio.onPlay(() => {
+        scrollContinue(parseFloat(player.audio.currentTime.toFixed(2)))
         state.value = true
       })
       player.audio.onPause(() => {
+        scrollSuspend(parseFloat(player.audio.currentTime.toFixed(2)))
         state.value = false
       })
       if (props.musicInfo?.id) {
@@ -203,9 +197,7 @@ export default defineComponent({
         totalTime = musicList[currIndex.value].duration
       }
       player.audio.onTimeUpdate(() => {
-        currTime = player.audio.currentTime
-        // throttle(getCurrTime(player.audio.currentTime), 50)
-        throttle(autoScroll(player.audio.currentTime), 500)
+        throttle(autoScroll(player.audio.currentTime), 100)
       })
     })
 
@@ -217,9 +209,7 @@ export default defineComponent({
       currLyricIndex,
       scrollViewStyle,
       currStyle,
-      prevStyle,
-      pause,
-      play
+      prevStyle
     }
   }
 })
