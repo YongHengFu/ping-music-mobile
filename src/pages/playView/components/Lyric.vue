@@ -19,12 +19,11 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import player from '@/utils/player'
 import { getLyricById } from '@/api/music'
 import { throttle } from '@/utils/frequency'
 import Taro from '@tarojs/taro'
-import { useStore } from 'vuex'
 import { navigationBarHeight } from '@/utils/navigationBarInfo'
 import IconPlay from '@/assets/icons/play.png'
 import IconPause from '@/assets/icons/pause.png'
@@ -47,9 +46,8 @@ export default defineComponent({
     }
   },
   setup(props, ctx) {
-    const store = useStore()
-    const currIndex = computed(() => store.state.currIndex)
     let musicId = ''
+    let playState = false
     const lyricList = ref([] as any)
     const currLyricIndex = ref(0)
     const scrollViewStyle = {
@@ -68,6 +66,14 @@ export default defineComponent({
       if (props.musicInfo?.id !== musicId) {
         musicId = props.musicInfo?.id
         getLyricStr(musicId)
+      }
+      if (props.state !== playState) {
+        playState = props.state
+        if (playState) {
+          scrollContinue(props.currTime)
+        } else {
+          scrollSuspend(props.currTime)
+        }
       }
       throttle(autoScroll(props.currTime), 100)
     })
@@ -193,23 +199,6 @@ export default defineComponent({
         }
       }
     }
-
-    onMounted(() => {
-      // if (player.audio.paused) {
-      //   state.value = false
-      // } else {
-      //   state.value = true
-      // }
-      // player.audio.onPlay(() => {
-      //   scrollContinue(player.audio.currentTime)
-      // })
-      // player.audio.onPause(() => {
-      //   scrollSuspend(player.audio.currentTime)
-      // })
-      // if (props.musicInfo?.id) {
-      //   getLyricStr(props.musicInfo.id)
-      // }
-    })
 
     return {
       IconPlay,

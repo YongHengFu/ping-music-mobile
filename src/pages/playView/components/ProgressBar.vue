@@ -15,8 +15,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { defineComponent, ref, watch } from 'vue'
 import { throttle } from '@/utils/frequency'
 import Taro from '@tarojs/taro'
 import player from '@/utils/player'

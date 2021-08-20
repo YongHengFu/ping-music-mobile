@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch } from 'vue'
+import { defineComponent, ref } from 'vue'
 import MusicList from '@/components/MusicList.vue'
 import ProgressBar from '@/pages/playView/components/ProgressBar.vue'
 import IconPlay from '@/assets/icons/play.png'
@@ -39,7 +39,6 @@ import IconLoop from '@/assets/icons/loop.png'
 import IconSingle from '@/assets/icons/single.png'
 import IconList from '@/assets/icons/music-list2.png'
 import player from '@/utils/player'
-import Taro from '@tarojs/taro'
 
 export default defineComponent({
   name: 'Music',
