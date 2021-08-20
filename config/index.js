@@ -22,7 +22,8 @@ const config = {
   },
   framework: 'vue3',
   alias: {
-    '@': resolve(__dirname, '..', 'src/')
+    '@': resolve(__dirname, '..', 'src/'),
+    '#': resolve(__dirname, '..', 'node_modules/')
   },
   mini: {
     postcss: {

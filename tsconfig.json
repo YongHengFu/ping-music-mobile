@@ -22,7 +22,7 @@
       "node_modules/@types",
       "global.d.ts"
     ],
-    "paths": { "@/*": ["src/*"] }
+    "paths": { "@/*": ["src/*"],"#/*": ["node_modules/*"] }
   },
   "exclude": [
     "node_modules",
