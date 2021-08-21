@@ -1,7 +1,8 @@
 <template>
   <div :class="$style['page-play-view']">
-    <div :class="$style['mask-wrapper']">
-      <div :class="$style.mask" :style="maskStyle" />
+    <div :class="$style['mask-wrapper']" >
+      <div :class="$style['mask-color']" :style="maskStyle"></div>
+      <canvas id="mask" type="2d" :class="$style.mask" />
     </div>
     <NavigationBar :curr-tab-index="currTabIndex" @changeTab="changeTab" />
     <swiper :class="$style.components" :style="pageStyle" :vertical="stopChange" :duration="300" :current="currTabIndex" @Change="changeTabIndex">
@@ -19,6 +20,7 @@
 </template>
 
 <script lang="ts">
+import colorThief from '#/miniapp-color-thief'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import Rcmd from '@/pages/playView/components/Rcmd.vue'
 import Music from '@/pages/playView/components/Music.vue'
@@ -36,6 +38,11 @@ export default defineComponent({
     Music,
     Lyric
   },
+  onReady() {
+    Taro.nextTick(() => {
+      this.getPrimaryColor()
+    })
+  },
   setup() {
     const store = useStore()
     const state = ref(false)
@@ -44,7 +51,7 @@ export default defineComponent({
     const currIndex = computed(() => store.state.currIndex)
     const musicInfo = ref({} as any)
     const maskStyle = ref({
-      'background-image': `url(${musicInfo.value?.album?.picUrl})`
+      'background': ''
     })
     const pageStyle = {
       'margin-top': `${navigationBarHeight + 10}px`,
@@ -65,19 +72,50 @@ export default defineComponent({
       stopChange.value = value
     }
 
+    const getPrimaryColor = () => {
+      const selectorQuery = Taro.createSelectorQuery()
+      selectorQuery.select('#mask').fields({ node: true, size: true })
+        .exec((res) => {
+          console.log(res)
+          const canvas = res[0].node
+          const context = canvas.getContext('2d')
+          const image = canvas.createImage()
+          image.src = musicInfo.value.album.picUrl + '?param=50y50'
+          image.onload = () => {
+            context.drawImage(image, 0, 0, 300, 150)
+            const data = context.getImageData(0, 0, Taro.getSystemInfoSync().screenWidth, Taro.getSystemInfoSync().screenHeight).data
+            const palette = colorThief(data)
+              .color(2)
+              .get()
+            let isLight = false
+            for (let i = 0; i < 3; i++) {
+              if (palette[i] > 150) {
+                isLight = true
+                break
+              }
+            }
+            if (isLight) {
+              for (let i = 0; i < 3; i++) {
+                palette[i] -= Math.ceil(palette[i] / 3)
+              }
+            }
+            maskStyle.value.background = `rgba(${palette},0.8)`
+          }
+        })
+    }
+
     onMounted(() => {
       totalTime.value = player.audio.duration
       const musicList = Taro.getStorageSync('musicList')
       if (musicList) {
         musicInfo.value = musicList[currIndex.value]
-        maskStyle.value['background-image'] = `url(${musicInfo.value.album.picUrl})`
         totalTime.value = musicList[currIndex.value].duration
       }
       player.audio.onCanplay(() => {
         const musicList = Taro.getStorageSync('musicList')
         if (musicList) {
           musicInfo.value = musicList[currIndex.value]
-          maskStyle.value['background-image'] = `url(${musicInfo.value.album.picUrl}?param=300y300)`
+          getPrimaryColor()
         }
         if (musicList) {
           totalTime.value = musicList[currIndex.value].duration
@@ -112,7 +150,8 @@ export default defineComponent({
       musicInfo,
       changeTab,
       changeTabIndex,
-      moving
+      moving,
+      getPrimaryColor
     }
   }
 })
@@ -132,18 +171,23 @@ export default defineComponent({
     overflow: hidden;
     background: #323232;
     .mask{
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       filter: blur(30px);
       background-size:100% 100%;
-      transform: scale(1.2);
-      opacity: 0.5;
+      position: absolute;
+      left: 0px;
+      top: 0;
+      z-index: -1;
+    }
+    .mask-color{
+      width: 100vw;
+      height: 100vh;
     }
   }
   .components{
     width: 100vw;
-    overflow-y: hidden!important;
-    //height: 100vh;
+    height: 100vh;
   }
 }
 </style>
