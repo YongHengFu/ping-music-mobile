@@ -47,9 +47,8 @@ export default defineComponent({
   display: flex;
   justify-content: space-around;
   align-items: center;
-  border: 1px solid #d8d8d8;
   border-radius: 50px;
-  background: #fff;
+  background: #dfdfdfaa;
   .back{
     width: 50px;
     height: 50px;
