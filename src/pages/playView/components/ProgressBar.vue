@@ -97,7 +97,7 @@ export default defineComponent({
     .bar-total{
       width: 100%;
       height: 8px;
-      background: #686868a0;
+      background: #ffffff50;
       position: absolute;
       left: 0;
       right: 0;
