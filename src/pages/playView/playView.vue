@@ -1,7 +1,7 @@
 <template>
   <div :class="$style['page-play-view']">
-    <div :class="$style['mask-wrapper']" >
-      <div :class="$style['mask-color']" :style="maskStyle"></div>
+    <div :class="$style['mask-wrapper']">
+      <div :class="$style['mask-color']" :style="maskStyle" />
       <canvas id="mask" type="2d" :class="$style.mask" />
     </div>
     <NavigationBar :curr-tab-index="currTabIndex" @changeTab="changeTab" />
@@ -76,8 +76,10 @@ export default defineComponent({
       const selectorQuery = Taro.createSelectorQuery()
       selectorQuery.select('#mask').fields({ node: true, size: true })
         .exec((res) => {
-          console.log(res)
-          const canvas = res[0].node
+          const canvas = res[0]?.node
+          if (!canvas) {
+            return
+          }
           const context = canvas.getContext('2d')
           const image = canvas.createImage()
           image.src = musicInfo.value.album.picUrl + '?param=50y50'
