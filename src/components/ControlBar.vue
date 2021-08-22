@@ -16,16 +16,17 @@
 </template>
 
 <script lang="ts">
-import colorThief from '#/miniapp-color-thief'
-import { computed, defineComponent, onActivated, onMounted, ref } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
+import Taro, { eventCenter, getCurrentInstance } from '@tarojs/taro'
+import colorThief from '#/miniapp-color-thief'
 import player from '@/utils/player'
 import MusicList from '@/components/MusicList.vue'
 import iconVinyl from '@/assets/icons/vinyl.png'
 import iconPlay from '@/assets/icons/play-mini.png'
 import iconPause from '@/assets/icons/pause-mini.png'
 import iconMusicList from '@/assets/icons/music-list.png'
-import Taro, { eventCenter, getCurrentInstance } from '@tarojs/taro'
+
 export default defineComponent({
   name: 'ControlBar',
   components: {
@@ -136,7 +137,7 @@ export default defineComponent({
 <style module lang="scss">
 .control-bar{
   position: fixed;
-  bottom: 0;
+  bottom: 20px;
   left: 30px;
   right: 30px;
   .bar{
@@ -205,6 +206,27 @@ export default defineComponent({
         height: 40px;
       }
     }
+  }
+  &:after{
+    content: "";
+    width: 6vh;
+    height: 6vh;
+    position: absolute;
+    left: 3vh;
+    bottom: 0;
+    box-shadow: 0 8px 10px #acacac;
+    z-index: -1;
+  }
+  &:before{
+    content: "";
+    width: 100%;
+    height: 5vh;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    transform: translateY(30px);
+    background: #fff;
+    z-index: -2;
   }
 }
 </style>
