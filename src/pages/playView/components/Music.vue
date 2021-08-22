@@ -10,9 +10,10 @@
           {{ item.name }}{{ index!==musicInfo?.artist.length-1?'/':'' }}
         </span>
       </div>
+      <span :class="$style.lyric">{{currLyric}}</span>
     </div>
     <div :class="$style.control">
-      <ProgressBar :class="$style['progress-bar']" :curr-time="currTime" :total-time="totalTime" @moving="moving" />
+      <ProgressBar :class="$style['progress-bar']" :curr-time="currTime" :total-time="totalTime" @moving="moving" @jump="jumpTo" />
       <div :class="$style.button">
         <img :src="IconRand" :class="$style.icon1">
         <img :src="IconPrev" :class="$style.icon3" @click="prev">
@@ -59,6 +60,10 @@ export default defineComponent({
     totalTime: {
       type: Number,
       required: true
+    },
+    currLyric: {
+      type: String,
+      required: true
     }
   },
   setup(props, ctx) {
@@ -84,6 +89,10 @@ export default defineComponent({
       ctx.emit('moving', value)
     }
 
+    const jumpTo = (jumpTime:number) => {
+      ctx.emit('jump', jumpTime)
+    }
+
     return {
       IconPlay,
       IconPause,
@@ -99,7 +108,8 @@ export default defineComponent({
       pause,
       prev,
       next,
-      moving
+      moving,
+      jumpTo
     }
   }
 })
@@ -137,6 +147,14 @@ export default defineComponent({
       font-size: 24px;
       color: #ccc;
       margin: 30px 0;
+    }
+    .lyric{
+      width: 100%;
+      font-size: 32px;
+      color: #ccc;
+      margin: 30px 0;
+      overflow: auto;
+      white-space:normal
     }
     overflow: hidden;
     text-overflow: ellipsis;

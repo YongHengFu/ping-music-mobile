@@ -43,6 +43,10 @@ export default defineComponent({
     totalTime: {
       type: Number,
       required: true
+    },
+    jumpTime: {
+      type: Number,
+      required: true
     }
   },
   setup(props, ctx) {
@@ -61,6 +65,8 @@ export default defineComponent({
       'font-size': '20px',
       'background-size': '0'
     })
+    let isJump = false
+    let jumpTime = 0
 
     watch(props, () => {
       if (props.musicInfo?.id !== musicId) {
@@ -75,7 +81,21 @@ export default defineComponent({
           scrollSuspend(props.currTime)
         }
       }
-      throttle(autoScroll(props.currTime), 100)
+      if (props.jumpTime !== jumpTime) {
+        jumpTime = props.jumpTime
+        jumpScroll(jumpTime)
+      }
+      if (!isJump) {
+        throttle(autoScroll(props.currTime), 100)
+      }
+    })
+
+    watch(currLyricIndex, () => {
+      if (currLyricIndex.value > -1 || currLyricIndex.value < lyricList.value.length) {
+        ctx.emit('currLyric', lyricList.value[currLyricIndex.value].lyric)
+      } else {
+        ctx.emit('currLyric', '')
+      }
     })
 
     const play = () => {
@@ -182,22 +202,109 @@ export default defineComponent({
       }
       lyricList.value = list
       currLyricIndex.value = 0
+      initLyric()
     }
 
     const autoScroll = (currTime:number) => {
-      if (currLyricIndex.value < lyricList.value.length - 1) {
-        if (currTime > lyricList.value[currLyricIndex.value + 1].time) {
-          currLyricIndex.value++
-          let time = 0
-          if (currLyricIndex.value < lyricList.value.length - 1) {
-            time = lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time
+      if (!isJump) {
+        if (currLyricIndex.value < lyricList.value.length - 1) {
+          if (currTime > lyricList.value[currLyricIndex.value + 1].time) {
+            currLyricIndex.value++
+            let time = 0
+            if (currLyricIndex.value < lyricList.value.length - 1) {
+              time = lyricList.value[currLyricIndex.value + 1].time - lyricList.value[currLyricIndex.value].time
+            } else {
+              time = props.totalTime - lyricList.value[currLyricIndex.value].time
+            }
+            currStyle.value.transition = `background-size ${time}s linear`
+            currStyle.value['background-size'] = '100%'
+          }
+        }
+      }
+    }
+
+    const getJumpIndex = (jumpTime:number) => {
+      if (jumpTime < props.currTime) {
+        for (let i = currLyricIndex.value; i > -1; i--) {
+          if (lyricList.value[i].time < jumpTime) {
+            return i
+          }
+        }
+      } else if (jumpTime < lyricList.value[lyricList.value.length - 1].time) {
+        for (let i = currLyricIndex.value; i < lyricList.value.length; i++) {
+          if (lyricList.value[i].time > jumpTime) {
+            return i - 1
+          }
+        }
+      } else {
+        return lyricList.value.length - 1
+      }
+      return 0
+    }
+
+    const jumpScroll = (jumpTime:number) => {
+      isJump = true
+      const index = getJumpIndex(jumpTime)
+      if (index > -1) {
+        currLyricIndex.value = index
+        currStyle.value.transition = `background-size 0s`
+        let percent = 0
+        if (index < lyricList.value.length - 1) {
+          percent = (jumpTime - lyricList.value[index].time) / (lyricList.value[index + 1].time - lyricList.value[index].time) * 100
+        } else {
+          percent = (jumpTime - lyricList.value[index].time) / (props.totalTime - lyricList.value[index].time) * 100
+        }
+        currStyle.value['background-size'] = `${percent}%`
+        let time = 0
+        if (index < lyricList.value.length - 1) {
+          time = lyricList.value[index + 1].time - jumpTime
+        } else {
+          time = props.totalTime - jumpTime
+        }
+        currStyle.value.transition = `background-size ${time}s linear`
+        currStyle.value['background-size'] = '100%'
+        Taro.nextTick(() => {
+          isJump = false
+        })
+      }
+    }
+
+    const initLyric = () => {
+      setTimeout(() => {
+        const initTime = props.currTime
+        if (initTime > 2) {
+          isJump = true
+          let index = 0
+          if (initTime < lyricList.value[lyricList.value.length - 1].time) {
+            for (let i = 0; i < lyricList.value.length; i++) {
+              if (lyricList.value[i].time > initTime) {
+                index = i - 1
+                break
+              }
+            }
           } else {
-            time = props.totalTime - lyricList.value[currLyricIndex.value].time
+            index = lyricList.value.length - 1
+          }
+          currLyricIndex.value = index
+          currStyle.value.transition = `background-size 0s`
+          let percent = 0
+          if (index < lyricList.value.length - 1) {
+            percent = (initTime - lyricList.value[index].time) / (lyricList.value[index + 1].time - lyricList.value[index].time) * 100
+          } else {
+            percent = (initTime - lyricList.value[index].time) / (props.totalTime - lyricList.value[index].time) * 100
+          }
+          currStyle.value['background-size'] = `${percent}%`
+          let time = 0
+          if (index < lyricList.value.length - 1) {
+            time = lyricList.value[index + 1].time - initTime
+          } else {
+            time = props.totalTime - initTime
           }
           currStyle.value.transition = `background-size ${time}s linear`
           currStyle.value['background-size'] = '100%'
+          isJump = false
         }
-      }
+      }, 500)
     }
 
     return {

@@ -68,11 +68,12 @@ export default defineComponent({
       right = (1 - (moveX - offsetLeft) / barWidth) * 100
       right = right < 0 ? 0 : (right > 100 ? 100 : right)
       barStyle.value.right = `${right}%`
-      // currTime.value = (1 - right / 100) * totalTime.value
     }
     const touchend = () => {
       ctx.emit('moving', false)
-      player.audio.seek((1 - right / 100) * props.totalTime)
+      const jumpTime = (1 - right / 100) * props.totalTime
+      player.audio.seek(jumpTime)
+      ctx.emit('jump', jumpTime)
       auto = true
     }
 

@@ -2,7 +2,7 @@
   <div :class="$style['page-play-view']">
     <div :class="$style['mask-wrapper']">
       <div :class="$style['mask-color']" :style="maskStyle" />
-      <canvas id="mask" type="2d" :class="$style.mask" />
+      <canvas id="mask" type="2d" :class="$style.mask"/>
     </div>
     <NavigationBar :curr-tab-index="currTabIndex" @changeTab="changeTab" />
     <swiper :class="$style.components" :style="pageStyle" :vertical="stopChange" :duration="300" :current="currTabIndex" @Change="changeTabIndex">
@@ -10,26 +10,27 @@
         <Rcmd :music-info="musicInfo" />
       </swiper-item>
       <swiper-item>
-        <Music :music-info="musicInfo" :state="state" :curr-time="currTime" :total-time="totalTime" @moving="moving" />
+        <Music :music-info="musicInfo" :state="state" :curr-time="currTime" :total-time="totalTime" :curr-lyric="currLyric" @moving="moving" @jump="jumpTo" />
       </swiper-item>
       <swiper-item>
-        <Lyric :music-info="musicInfo" :state="state" :curr-time="currTime" :total-time="totalTime" />
+        <Lyric :music-info="musicInfo" :state="state" :curr-time="currTime" :jump-time="jumpTime" :total-time="totalTime" @currLyric="getCurrLyric" />
       </swiper-item>
     </swiper>
   </div>
 </template>
 
 <script lang="ts">
-import colorThief from '#/miniapp-color-thief'
 import { computed, defineComponent, onMounted, ref } from 'vue'
+import { useStore } from 'vuex'
+import Taro from '@tarojs/taro'
+import colorThief from '#/miniapp-color-thief'
 import Rcmd from '@/pages/playView/components/Rcmd.vue'
 import Music from '@/pages/playView/components/Music.vue'
 import Lyric from '@/pages/playView/components/Lyric.vue'
 import NavigationBar from '@/pages/playView/components/NavigationBar.vue'
 import { navigationBarHeight } from '@/utils/navigationBarInfo'
 import player from '@/utils/player'
-import Taro from '@tarojs/taro'
-import { useStore } from 'vuex'
+
 export default defineComponent({
   name: 'PlayView',
   components: {
@@ -48,7 +49,9 @@ export default defineComponent({
     const state = ref(false)
     const currTime = ref(0)
     const totalTime = ref(0)
+    const jumpTime = ref(0)
     const currIndex = computed(() => store.state.currIndex)
+    const currLyric = ref('')
     const musicInfo = ref({} as any)
     const maskStyle = ref({
       'background': ''
@@ -106,6 +109,14 @@ export default defineComponent({
         })
     }
 
+    const jumpTo = (time:number) => {
+      jumpTime.value = time
+    }
+
+    const getCurrLyric = (lyric:string) => {
+      currLyric.value = lyric
+    }
+
     onMounted(() => {
       totalTime.value = player.audio.duration
       const musicList = Taro.getStorageSync('musicList')
@@ -147,13 +158,17 @@ export default defineComponent({
       state,
       currTime,
       totalTime,
+      jumpTime,
       currTabIndex,
+      currLyric,
       stopChange,
       musicInfo,
       changeTab,
       changeTabIndex,
       moving,
-      getPrimaryColor
+      getPrimaryColor,
+      jumpTo,
+      getCurrLyric
     }
   }
 })
