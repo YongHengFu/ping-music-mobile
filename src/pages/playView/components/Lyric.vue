@@ -331,7 +331,7 @@ export default defineComponent({
     justify-content: center;
     height: 200px;
     .name{
-      font-size: 42px;
+      font-size: 46px;
       font-weight: bold;
       color: #fff;
       display: -webkit-box;
@@ -343,7 +343,7 @@ export default defineComponent({
       display: flex;
       align-items: center;
       font-size: 24px;
-      color: #ccc;
+      color: #ffffffa0;
       margin: 30px 0;
     }
   }

@@ -134,7 +134,7 @@ export default defineComponent({
     .music-name{
       width: 100%;
       display: block;
-      font-size: 40px;
+      font-size: 46px;
       font-weight: bold;
       color: #fff;
       overflow: hidden;
@@ -145,13 +145,13 @@ export default defineComponent({
       display: flex;
       align-items: center;
       font-size: 24px;
-      color: #ccc;
+      color: #ffffffa0;
       margin: 30px 0;
     }
     .lyric{
       width: 100%;
-      font-size: 32px;
-      color: #ccc;
+      font-size: 36px;
+      color: #ffffffaa;
       margin: 30px 0;
       overflow: auto;
       white-space:normal

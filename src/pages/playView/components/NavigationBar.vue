@@ -67,7 +67,7 @@ export default defineComponent({
   top: 0;
   left: 0;
   right: 0;
-  background: #ffffff00;
+  background: transparent;
   z-index: 2;
   .tabs{
     display: flex;
@@ -75,10 +75,10 @@ export default defineComponent({
     align-items: center;
     .item{
       font-size: 30px;
-      color: #9a9a9aa0;
+      color: #ffffff50;
       .split{
         margin: 0 10px;
-        color: #9a9a9aa0;
+        color: #ffffff50;
       }
     }
     .item-active{
