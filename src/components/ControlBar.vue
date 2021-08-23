@@ -6,9 +6,11 @@
       <img :src="iconVinyl" :class="[$style.vinyl, {[$style['vinyl-rotate']]:state}]">
       <span :class="$style.text">{{ text }}</span>
       <div :class="$style['right-icon']">
-        <img v-if="state" :src="iconPause" :class="$style.pause" @click.stop="pause">
-        <img v-else :src="iconPlay" :class="$style.play" @click.stop="play">
-        <img :src="iconMusicList" :class="$style.list" @click.stop="showList=true">
+        <div :class="$style.wrapper" @click.stop="state?pause():play()">
+          <canvas id="progress" type="2d" :class="$style.progress" />
+          <img :src="state?iconPause:iconPlay" :class="$style.icon1">
+        </div>
+        <img :src="iconMusicList" :class="$style.icon2" @click.stop="showList=true">
       </div>
     </div>
   </div>
@@ -26,6 +28,7 @@ import iconVinyl from '@/assets/icons/vinyl.png'
 import iconPlay from '@/assets/icons/play-mini.png'
 import iconPause from '@/assets/icons/pause-mini.png'
 import iconMusicList from '@/assets/icons/music-list.png'
+import { throttle } from '@/utils/frequency'
 
 export default defineComponent({
   name: 'ControlBar',
@@ -38,6 +41,7 @@ export default defineComponent({
     const showList = ref(false)
     const image = ref('')
     const text = ref('PingMusic')
+    let totalTime = 0
     const currIndex = computed(() => store.state.currIndex)
     const barStyle = ref({
       background: ''
@@ -87,6 +91,30 @@ export default defineComponent({
         })
     }
 
+    const drawProgress = (num) => {
+      const selectorQuery = Taro.createSelectorQuery()
+      selectorQuery.select('#progress').fields({ node: true, size: true })
+        .exec((res) => {
+          const canvas = res[0]?.node
+          if (!canvas) {
+            return
+          }
+          canvas.width = 100
+          canvas.height = 100
+          const context = canvas.getContext('2d')
+          const centerX = canvas.width / 2
+          const centerY = canvas.height / 2
+          const rad = Math.PI * 2 / 100
+          context.save()
+          context.beginPath()
+          context.strokeStyle = '#fff'
+          context.lineWidth = 12
+          context.arc(centerX, centerY, 42, -Math.PI / 2, -Math.PI / 2 + num * rad, false)
+          context.stroke()
+          context.restore()
+        })
+    }
+
     onMounted(() => {
       player.audio.onPlay(() => {
         state.value = true
@@ -99,12 +127,18 @@ export default defineComponent({
         if (instance?.router !== null) {
           eventCenter.on(instance.router.onShow, () => {
             getPrimaryColor()
+            drawProgress(player.audio.currentTime / totalTime * 100)
+            player.audio.onTimeUpdate(() => {
+              throttle(drawProgress(player.audio.currentTime / totalTime * 100), 500)
+            })
           })
         }
       })
       player.audio.onCanplay(() => {
         const musicList = Taro.getStorageSync('musicList')
         if (musicList) {
+          totalTime = musicList[currIndex.value].duration
+          drawProgress(player.audio.currentTime / totalTime * 100)
           image.value = musicList[currIndex.value].album.picUrl + '?param=300y300'
           getPrimaryColor()
           text.value = musicList[currIndex.value].name + '-'
@@ -114,6 +148,9 @@ export default defineComponent({
           }
           text.value += artists.join('/')
         }
+      })
+      player.audio.onTimeUpdate(() => {
+        throttle(drawProgress(player.audio.currentTime / totalTime * 100), 500)
       })
     })
     return {
@@ -194,14 +231,30 @@ export default defineComponent({
       justify-content: space-around;
       align-items: center;
       margin-right: 20px;
-      .play, .pause{
-        width: 35px;
-        height: 35px;
-        padding: 5px;
+      .wrapper{
+        width: 36px;
+        height: 36px;
+        padding: 4px;
         border: 4px solid #fff;
         border-radius: 50%;
+        position: relative;
+        z-index: 2;
+        .progress{
+          width: 50px;
+          height: 50px;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%,-50%);
+          z-index: -2;
+        }
+        .icon1{
+          width: 36px;
+          height: 36px;
+          z-index: 2;
+        }
       }
-      .list{
+      .icon2{
         width: 40px;
         height: 40px;
       }
