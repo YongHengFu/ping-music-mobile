@@ -24,21 +24,20 @@
         <span :class="$style.text">新歌新碟</span>
       </div>
     </div>
-    <div :class="$style['rcmd-play']">
-      <span :class="$style.title">你的宝藏歌单</span>
-      <div id="rcmd" :class="$style['rcmd-play-list']">
+    <span :class="$style.title">你的宝藏歌单</span>
+    <swiper previous-margin="10px" next-margin="10px" :duration="100" :display-multiple-items="3" style="height: calc(((100vw - 60px) / 3 + 50px) * 2)">
+      <swiper-item v-for="n of rcmdPlayList.length/2" :key="n">
         <Cover
-          v-for="(item,index) of rcmdPlayList"
-          :id="'rcmd'+index"
-          :key="item.id"
-          :image="item.picUrl"
-          :text="item.name"
-          :number="item.playCount"
-          :class="$style.item"
-          @click="playListAll(item.id)"
+          v-for="m of 2"
+          :key="m"
+          :image="rcmdPlayList[(n-1)*2+m-1].picUrl"
+          :text="rcmdPlayList[(n-1)*2+m-1].name"
+          :number="rcmdPlayList[(n-1)*2+m-1].playCount"
+          style="margin: 5px"
+          @click="playListAll(rcmdPlayList[(n-1)*2+m-1].id)"
         />
-      </div>
-    </div>
+      </swiper-item>
+    </swiper>
     <ControlBar />
   </div>
 </template>
@@ -131,27 +130,6 @@ export default defineComponent({
         color: #6d6d6d;
         margin-top: 10px;
       }
-    }
-  }
-
-  .rcmd-play{
-    .rcmd-play-list{
-      display: grid;
-      grid-template-columns: repeat(8, calc((100% - 60px) / 3));
-      grid-template-rows: repeat(2, auto);
-      grid-gap: 20px 20px;
-      overflow-x: auto;
-      padding: 0 30px 20px 30px;
-      .item{
-        width: 100%;
-        aspect-ratio: 1/1;
-        &:last-child{
-          padding-right: 30px;
-        }
-      }
-    }
-    ::-webkit-scrollbar {
-      width: 0 !important
     }
   }
 }

@@ -11,7 +11,7 @@ export function getBanner() {
 /** 推荐歌单  **/
 export function getRcmdPlayList() {
   return request({
-    url: '/personalized?limit=16',
+    url: '/personalized?limit=12',
     method: 'get'
   })
 }
