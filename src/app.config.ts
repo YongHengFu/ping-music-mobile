@@ -5,6 +5,7 @@ export default {
     'pages/personal/personal',
     'pages/playView/playView'
   ],
+  requiredBackgroundModes: ['audio'],
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#ffffff',

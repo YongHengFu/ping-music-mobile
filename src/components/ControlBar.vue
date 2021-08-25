@@ -115,6 +115,25 @@ export default defineComponent({
         })
     }
 
+    const initData = () => {
+      const musicList = Taro.getStorageSync('musicList')
+      if (musicList) {
+        totalTime = musicList[currIndex.value].duration
+        drawProgress(player.audio.currentTime / totalTime * 100)
+        image.value = musicList[currIndex.value].album.picUrl + '?param=300y300'
+        getPrimaryColor()
+        text.value = musicList[currIndex.value].name + '-'
+        const artists = [] as string[]
+        for (const item of musicList[currIndex.value].artist) {
+          artists.push(item.name)
+        }
+        text.value += artists.join('/')
+      }
+      player.audio.onTimeUpdate(() => {
+        throttle(drawProgress(player.audio.currentTime / totalTime * 100), 500)
+      })
+    }
+
     onMounted(() => {
       player.audio.onPlay(() => {
         state.value = true
@@ -126,31 +145,12 @@ export default defineComponent({
         const instance = getCurrentInstance()
         if (instance?.router !== null) {
           eventCenter.on(instance.router.onShow, () => {
-            getPrimaryColor()
-            drawProgress(player.audio.currentTime / totalTime * 100)
-            player.audio.onTimeUpdate(() => {
-              throttle(drawProgress(player.audio.currentTime / totalTime * 100), 500)
-            })
+            initData()
           })
         }
       })
       player.audio.onCanplay(() => {
-        const musicList = Taro.getStorageSync('musicList')
-        if (musicList) {
-          totalTime = musicList[currIndex.value].duration
-          drawProgress(player.audio.currentTime / totalTime * 100)
-          image.value = musicList[currIndex.value].album.picUrl + '?param=300y300'
-          getPrimaryColor()
-          text.value = musicList[currIndex.value].name + '-'
-          const artists = [] as string[]
-          for (const item of musicList[currIndex.value].artist) {
-            artists.push(item.name)
-          }
-          text.value += artists.join('/')
-        }
-      })
-      player.audio.onTimeUpdate(() => {
-        throttle(drawProgress(player.audio.currentTime / totalTime * 100), 500)
+        initData()
       })
     })
     return {

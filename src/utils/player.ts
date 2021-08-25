@@ -17,6 +17,14 @@ const next = () => {
       }
       if (musicList[index].canPlay.able) {
         player.audio.stop()
+        let singer = ''
+        for (const item of musicList[index].artist) {
+          singer += item.name
+        }
+        player.audio.title = musicList[index].name
+        player.audio.epname = musicList[index].album.name
+        player.audio.singer = singer
+        player.audio.coverImgUrl = musicList[index].album.picUrl + '?param=300y300'
         player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
         player.audio.play()
       } else {
@@ -41,6 +49,14 @@ const prev = () => {
       }
       if (musicList[index].canPlay.able) {
         player.audio.stop()
+        let singer = ''
+        for (const item of musicList[index].artist) {
+          singer += item.name
+        }
+        player.audio.title = musicList[index].name
+        player.audio.epname = musicList[index].album.name
+        player.audio.singer = singer
+        player.audio.coverImgUrl = musicList[index].album.picUrl + '?param=300y300'
         player.audio.src = `https://music.163.com/song/media/outer/url?id=${musicList[index].id}.mp3`
         player.audio.play()
       } else {
@@ -77,7 +93,7 @@ const playByIndex = () => {
 }
 
 const player = {
-  audio: Taro.createInnerAudioContext(),
+  audio: Taro.getBackgroundAudioManager(),
   mode: 0,
   randList: [],
   next: next(),
@@ -85,7 +101,13 @@ const player = {
   switchMode: switchMode(),
   playByIndex: playByIndex()
 }
-player.audio.autoplay = true
+player.audio.title = 'PingMusic'
+player.audio.onPrev(() => {
+  player.prev()
+})
+player.audio.onNext(() => {
+  player.next()
+})
 player.audio.onEnded(() => {
   player.next()
 })

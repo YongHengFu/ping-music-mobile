@@ -1,7 +1,7 @@
 import Store from '@/store'
 import Taro from '@tarojs/taro'
 import player from '@/utils/player'
-import { getAlbumById, getListById, getMusicDetail } from '@/api/music'
+import { getListById, getMusicDetail } from '@/api/music'
 
 // 选择歌曲进行播放
 // export const playSingle = async(id:string) => {
@@ -33,7 +33,7 @@ export const getMusicData = (ids:string[], listId:string) => {
   return getMusicDetail(param).then((res:any) => {
     if (res.code === 200) {
       const songs = res.songs
-      const details = []
+      const details = [] as any
       let index2 = 0
       for (const [index, item] of songs.entries()) {
         const song:any = {
@@ -95,7 +95,7 @@ export const playList = async(id:string) => {
   const param = { id }
   const ids = await getListById(param).then((res:any) => {
     if (res.code === 200) {
-      const ids = []
+      const ids = [] as any
       for (const item of res.playlist.trackIds) {
         ids.push(item.id)
       }
@@ -116,9 +116,16 @@ export const playList = async(id:string) => {
         if (list && list.length > 0) {
           Taro.setStorageSync('musicList', list)
           if (i === 0) {
+            let singer = ''
+            for (const item of list[0].artist) {
+              singer += item.name
+            }
+            player.audio.title = list[0].name
+            player.audio.epname = list[0].album.name
+            player.audio.singer = singer
+            player.audio.coverImgUrl = list[0].album.picUrl + '?param=300y300'
             player.audio.src = `https://music.163.com/song/media/outer/url?id=${list[0].id}.mp3`
             Store.commit('setCurrIndex', 0)
-            player.audio.play()
           }
         }
       }
