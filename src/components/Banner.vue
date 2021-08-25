@@ -18,13 +18,24 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onMounted, ref, watch } from 'vue'
 import { getBanner } from '@/api/music'
 
 export default defineComponent({
   name: 'Banner',
-  setup() {
+  props: {
+    update: {
+      type: Number,
+      required: true
+    }
+  },
+  setup(props, ctx) {
     const bannerList = ref([])
+
+    watch(props, () => {
+      getBannerData()
+    })
+
     const getBannerData = () => {
       getBanner().then((res:any) => {
         if (res.code === 200) {
