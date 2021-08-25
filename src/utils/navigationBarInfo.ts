@@ -5,3 +5,4 @@ export const navigationBarHeight = (menuBarInfo.top - statusBarHeight) * 2 + men
 export const pageWith = Taro.getSystemInfoSync().screenWidth
 export const menuBarHeight = menuBarInfo.height
 export const menuBarWidth = (Taro.getSystemInfoSync().screenWidth - menuBarInfo.right) * 2 + menuBarInfo.width
+export const windowHeight = Taro.getSystemInfoSync().windowHeight
