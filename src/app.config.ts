@@ -3,7 +3,8 @@ export default {
     'pages/music/music',
     'pages/video/video',
     'pages/personal/personal',
-    'pages/playView/playView'
+    'pages/playView/playView',
+    'pages/playList/playList'
   ],
   requiredBackgroundModes: ['audio'],
   window: {
