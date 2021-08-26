@@ -116,6 +116,17 @@ export default defineComponent({
     }
 
     const initData = () => {
+      if (player.audio.paused || player.audio.paused === undefined) {
+        state.value = false
+      } else {
+        state.value = true
+      }
+      player.audio.onPlay(() => {
+        state.value = true
+      })
+      player.audio.onPause(() => {
+        state.value = false
+      })
       const musicList = Taro.getStorageSync('musicList')
       if (musicList) {
         totalTime = musicList[currIndex.value].duration
