@@ -43,7 +43,7 @@
             :text="rcmdPlayList[(n-1)*2+m-1].name"
             :number="rcmdPlayList[(n-1)*2+m-1].playCount"
             style="margin: 5px"
-            @click="playListAll(rcmdPlayList[(n-1)*2+m-1].id)"
+            @click="openList(rcmdPlayList[(n-1)*2+m-1].id)"
           />
         </swiper-item>
       </swiper>
@@ -54,6 +54,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
+import Taro from '@tarojs/taro'
 import NavigationBar from '@/pages/music/NavigationBar.vue'
 import Banner from '@/components/Banner.vue'
 import Cover from '@/components/Cover.vue'
@@ -64,7 +65,6 @@ import rank from '@/assets/icons/rank.png'
 import playlist from '@/assets/icons/playlist.png'
 import newsong from '@/assets/icons/newsong.png'
 import { getRcmdPlayList } from '@/api/music'
-import { playList } from '@/utils/musicList'
 import { navigationBarHeight, windowHeight } from '@/utils/navigationBarInfo'
 
 export default defineComponent({
@@ -93,8 +93,10 @@ export default defineComponent({
       })
     }
 
-    const playListAll = (id:string) => {
-      playList(id)
+    const openList = (id:string) => {
+      Taro.navigateTo({
+        url: `/pages/playList/playList?id=${id}`
+      })
     }
 
     const refresh = async() => {
@@ -120,7 +122,7 @@ export default defineComponent({
       rcmdPlayList,
       refreshState,
       bannerUpdate,
-      playListAll,
+      openList,
       refresh
     }
   }

@@ -1,9 +1,8 @@
 <template>
   <div :class="$style['music-item']">
-<!--    <span :class="$style.index">{{ music.index+1 }}</span>-->
     <img :src="`${music.album.picUrl}?param=200y200`" :class="$style.cover"/>
     <span :class="$style.info">
-      <span :class="$style.name">{{ music.name }}</span>
+      <span :class="[$style.name,{[$style['name-invalid']]:!music?.canPlay.able}]">{{ music.name }}</span>
       <span :class="$style.dsca">
         <span v-for="(item,index) of music?.artist" :key="item.id">
           {{ item.name }}{{ index!==music?.artist.length-1?'/':'' }}
@@ -41,11 +40,8 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  .index{
-    width: 100px;
-    font-size: 30px;
-    text-align: center;
-    color: #000;
+  &:active{
+    background: #cccccc20;
   }
   .cover{
     width: 100px;
@@ -62,6 +58,10 @@ export default defineComponent({
     .name{
       font-size: 30px;
       color: #000;
+    }
+    .name-invalid{
+      font-size: 30px;
+      color: rgba(227, 227, 227, 0.8) !important;
     }
     .dsca{
       font-size: 26px;

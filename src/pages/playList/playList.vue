@@ -1,8 +1,8 @@
 <template>
   <div :class="$style['page-play-list']" @scroll="pageScroll">
-    <NavigationBar :opcaity="navigationOpacity" :title="navigationtitle" />
+    <NavigationBar :title="navigationTitle" :color="navigationColor" />
     <div :class="$style.head" :style="headStyle">
-      <canvas id="headMask" type="2d" :class="$style.mask" :style="maskStyle" />
+      <canvas id="headMask" type="2d" :class="$style.mask" />
       <div :class="$style.wrapper">
         <div :class="$style.cover">
           <img :src="listInfo?.coverImgUrl+'?param=500y500'" :class="$style.image">
@@ -31,19 +31,19 @@
         </div>
       </div>
     </div>
-    <div :class="$style['play-bar']" :style="stickyStyle">
+    <div :class="$style['play-bar']" :style="stickyStyle" @click="playAll">
       <img :src="IconPlay" :class="$style.icon">
       播放全部
       <span :class="$style.text">({{ listInfo?.trackCount }})</span>
     </div>
     <div>
-      <MusicItem v-for="item of musicList" :key="item.id" :music="item" />
+      <MusicItem v-for="item of musicList" :key="item.id" :music="item" @click="playSelect(item)" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import Taro from '@tarojs/taro'
 import colorThief from '#/miniapp-color-thief'
 import IconAdd from '@/assets/icons/add.png'
@@ -55,11 +55,16 @@ import MusicItem from '@/components/MusicItem.vue'
 import { getListById, getMusicDetail } from '@/api/music'
 import { navigationBarHeight } from '@/utils/navigationBarInfo'
 import { playAble } from '@/utils/musicList'
+import player from '@/utils/player'
+import Store from '@/store'
 export default defineComponent({
   name: 'PlayList',
   components: {
     NavigationBar,
     MusicItem
+  },
+  onLoad(params) {
+    this.getListData(params.id)
   },
   onPageScroll(e) {
     this.pageScroll(e.scrollTop)
@@ -69,14 +74,13 @@ export default defineComponent({
     const listInfo = ref({})
     const headStyle = ref({
       'padding-top': `${navigationBarHeight}px`,
-      'background': ''
+      'background-image': ''
     })
-    const maskStyle = ref({ background: '' })
     const stickyStyle = {
       top: `${navigationBarHeight}px`
     }
-    const navigationOpacity = ref(0)
-    const navigationtitle = ref('歌单')
+    const navigationTitle = ref('歌单')
+    const navigationColor = ref([])
     let playMusicList:any = []
     let isPlayAll = false
 
@@ -85,10 +89,8 @@ export default defineComponent({
       await getListById(param).then(async(res:any) => {
         if (res.code === 200) {
           listInfo.value = res.playlist
-          maskStyle.value.background = `url(${res.playlist.coverImgUrl}?param=500y500)`
-          navigationtitle.value = res.playlist.name
           getMusicList(res.playlist.trackIds)
-          // getPrimaryColor(`${res.playlist.coverImgUrl}?param=500y500`)
+          getPrimaryColor(`${res.playlist.coverImgUrl}?param=500y500`)
         }
       })
     }
@@ -143,7 +145,7 @@ export default defineComponent({
       }
       if (isPlayAll) {
         isPlayAll = false
-        // store.commit('setMusicList', playMusicList)
+        Taro.setStorageSync('musicList', playMusicList)
       }
     }
 
@@ -162,34 +164,80 @@ export default defineComponent({
             context.drawImage(img, 0, 0, 500, 500)
             const data = context.getImageData(0, 0, 500, 500).data
             const palette = colorThief(data)
-              .color(2)
-              .get()
-            headStyle.value.background = `rgb(${palette})`
+              .palette(3)
+              .getHex()
+            headStyle.value['background-image'] = `linear-gradient(to right, ${palette[2]} , ${palette[1]} , ${palette[0]});`
+            navigationColor.value = palette
           }
         })
     }
 
     const pageScroll = (top:number) => {
-      navigationOpacity.value = top / 200
+      if (top > 100) {
+        navigationTitle.value = listInfo.value.name
+      } else {
+        navigationTitle.value = '歌单'
+      }
     }
 
-    onMounted(() => {
-      getListData('5382682753')
-    })
+    const playAll = () => {
+      if (playMusicList.length > 0) {
+        isPlayAll = true
+        Taro.setStorageSync('musicList', playMusicList)
+        let singer = ''
+        for (const item of playMusicList[0].artist) {
+          singer += item.name
+        }
+        player.audio.title = playMusicList[0].name
+        player.audio.epname = playMusicList[0].album.name
+        player.audio.singer = singer
+        player.audio.coverImgUrl = playMusicList[0].album.picUrl + '?param=300y300'
+        player.audio.src = `https://music.163.com/song/media/outer/url?id=${playMusicList[0].id}.mp3`
+        Store.commit('setCurrIndex', 0)
+      }
+    }
 
+    const playSelect = (music:any) => {
+      if (music.canPlay.able) {
+        isPlayAll = true
+        for (const item of playMusicList) {
+          if (item.id === music.id) {
+            Taro.setStorageSync('musicList', playMusicList)
+            let singer = ''
+            for (const item2 of item.artist) {
+              singer += item2.name
+            }
+            player.audio.title = item.name
+            player.audio.epname = item.album.name
+            player.audio.singer = singer
+            player.audio.coverImgUrl = item.album.picUrl + '?param=300y300'
+            player.audio.src = `https://music.163.com/song/media/outer/url?id=${item.id}.mp3`
+            Store.commit('setCurrIndex', 0)
+            return
+          }
+        }
+      } else {
+        Taro.showToast({
+          title: music.canPlay.msg,
+          icon: 'none'
+        })
+      }
+    }
     return {
       musicList,
       listInfo,
       headStyle,
-      maskStyle,
       stickyStyle,
-      navigationOpacity,
-      navigationtitle,
+      navigationTitle,
+      navigationColor,
       IconAdd,
       IconComment,
       IconShare,
       IconPlay,
-      pageScroll
+      pageScroll,
+      getListData,
+      playAll,
+      playSelect
     }
   }
 })
@@ -204,16 +252,8 @@ export default defineComponent({
     .mask{
       position: absolute;
       width: 100%;
-      height: 800px;
-      transform: scale(1.1);
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      filter: blur(50px);
-      //opacity: 0.5;
-      z-index: -1;
-      background-size: 100%
+      height: 100%;
+      visibility: hidden;
     }
     .wrapper{
       padding: 50px 0;
@@ -284,7 +324,7 @@ export default defineComponent({
     }
     .operate-bar{
       width: 100%;
-      padding-bottom: 50px;
+      padding-bottom: 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -317,6 +357,7 @@ export default defineComponent({
     }
     .text{
       margin-left: 10px;
+      color: #000000a0;
     }
   }
 }
