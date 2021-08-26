@@ -200,7 +200,7 @@ export default defineComponent({
     const playSelect = (music:any) => {
       if (music.canPlay.able) {
         isPlayAll = true
-        for (const item of playMusicList) {
+        for (const [index,item] of playMusicList.entries()) {
           if (item.id === music.id) {
             Taro.setStorageSync('musicList', playMusicList)
             let singer = ''
@@ -212,7 +212,7 @@ export default defineComponent({
             player.audio.singer = singer
             player.audio.coverImgUrl = item.album.picUrl + '?param=300y300'
             player.audio.src = `https://music.163.com/song/media/outer/url?id=${item.id}.mp3`
-            Store.commit('setCurrIndex', 0)
+            Store.commit('setCurrIndex', index)
             return
           }
         }
