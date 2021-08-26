@@ -44,7 +44,7 @@ export default defineComponent({
 
 <style module lang="scss">
 .capsule{
-  display: flex;
+  display: flex!important;
   justify-content: space-around;
   align-items: center;
   border-radius: 50px;
