@@ -1,6 +1,5 @@
 <template>
   <div :class="$style['navigation-bar']" :style="navigationBarStyle">
-    <div :class="$style.mask" :style="maskStyle" />
     <Capsule />
     <div :class="$style.title" :style="titleStyle">
       <span :class="$style.text">{{ title }}</span>
@@ -32,13 +31,10 @@ export default defineComponent({
       height: `${navigationBarHeight}px`,
       'background-image': ''
     })
-    const maskStyle = ref({
-      height: `${navigationBarHeight}px`
-    })
     const titleStyle = ref({
       'height': `${menuBarHeight}px`,
       'width': `calc(100% - 2 * ${menuBarWidth}px)`,
-      'margin-top': `${statusBarHeight}px`,
+      'margin-top': `${statusBarHeight + (navigationBarHeight - statusBarHeight - menuBarHeight) / 2}px`,
       'color': `#fff`
     })
 
@@ -48,8 +44,7 @@ export default defineComponent({
 
     return {
       navigationBarStyle,
-      titleStyle,
-      maskStyle
+      titleStyle
     }
   }
 })
@@ -65,19 +60,6 @@ export default defineComponent({
   right: 0;
   z-index: 2;
   background: transparent;
-  .mask{
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transform: scale(1.1);
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    //filter: blur(20px);
-    z-index: -2;
-    background-size: 10%
-  }
   .title{
     display: flex;
     .text{
