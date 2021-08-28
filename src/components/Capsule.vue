@@ -12,14 +12,19 @@ import IconBack from '@/assets/icons/back.png'
 import IconHome from '@/assets/icons/home.png'
 export default defineComponent({
   name: 'Capsule',
-  setup() {
+  props: {
+    mode: String
+  },
+  setup(props, ctx) {
     const systemInfo = Taro.getSystemInfoSync()
     const menuBarInfo = Taro.getMenuButtonBoundingClientRect()
     const capsuleStyle = {
       height: `${menuBarInfo.height}px`,
       width: `${menuBarInfo.width}px`,
       margin: `${menuBarInfo.top - systemInfo.statusBarHeight}px ${systemInfo.screenWidth - menuBarInfo.right}px`,
-      transform: `translateY(${systemInfo.statusBarHeight}px)`
+      transform: `translateY(${systemInfo.statusBarHeight}px)`,
+      background: props?.mode ? '#fff' : '#dfdfdfaa',
+      border: props?.mode ? '0.2px solid #d8d8d8' : ''
     }
     const navigateBack = () => {
       Taro.navigateBack({
