@@ -58,12 +58,12 @@ export default defineComponent({
       'height': `${(Taro.getSystemInfoSync().screenHeight - navigationBarHeight - 120)}px`
     }
     const prevStyle = {
-      'transition': 'font-size 0.3s'
+      // 'transition': 'font-size 0.3s'
     }
     const currStyle = ref({
-      'transition': '',
-      'font-size': '20px',
-      'background-size': '0'
+      // 'transition': '',
+      // 'font-size': '20px',
+      // 'background-size': '0 100%'
     })
     let isJump = false
     let jumpTime = 0
