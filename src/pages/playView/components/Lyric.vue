@@ -114,7 +114,7 @@ export default defineComponent({
       } else {
         percent = (currTime - lyricList.value[currLyricIndex.value].time) / (props.totalTime - lyricList.value[currLyricIndex.value].time) * 100
       }
-      currStyle.value['background-size'] = `${percent}%`
+      currStyle.value['background-size'] = `${percent}% 100%`
     }
 
     const scrollContinue = (currTime:number) => {
@@ -125,7 +125,7 @@ export default defineComponent({
         time = props.totalTime - currTime
       }
       currStyle.value.transition = `background-size ${time}s linear`
-      currStyle.value['background-size'] = `100%`
+      currStyle.value['background-size'] = `100% 100%`
     }
 
     const getLyricStr = (id:string) => {
@@ -217,7 +217,7 @@ export default defineComponent({
               time = props.totalTime - lyricList.value[currLyricIndex.value].time
             }
             currStyle.value.transition = `background-size ${time}s linear`
-            currStyle.value['background-size'] = '100%'
+            currStyle.value['background-size'] = '100% 100%'
           }
         }
       }
@@ -254,7 +254,7 @@ export default defineComponent({
         } else {
           percent = (jumpTime - lyricList.value[index].time) / (props.totalTime - lyricList.value[index].time) * 100
         }
-        currStyle.value['background-size'] = `${percent}%`
+        currStyle.value['background-size'] = `${percent}% 100%`
         let time = 0
         if (index < lyricList.value.length - 1) {
           time = lyricList.value[index + 1].time - jumpTime
@@ -262,7 +262,7 @@ export default defineComponent({
           time = props.totalTime - jumpTime
         }
         currStyle.value.transition = `background-size ${time}s linear`
-        currStyle.value['background-size'] = '100%'
+        currStyle.value['background-size'] = '100% 100%'
         Taro.nextTick(() => {
           isJump = false
         })
@@ -293,7 +293,7 @@ export default defineComponent({
           } else {
             percent = (initTime - lyricList.value[index].time) / (props.totalTime - lyricList.value[index].time) * 100
           }
-          currStyle.value['background-size'] = `${percent}%`
+          currStyle.value['background-size'] = `${percent}% 100%`
           let time = 0
           if (index < lyricList.value.length - 1) {
             time = lyricList.value[index + 1].time - initTime
@@ -301,7 +301,7 @@ export default defineComponent({
             time = props.totalTime - initTime
           }
           currStyle.value.transition = `background-size ${time}s linear`
-          currStyle.value['background-size'] = '100%'
+          currStyle.value['background-size'] = '100% 100%'
           isJump = false
         }
       }, 500)
@@ -360,7 +360,7 @@ export default defineComponent({
         line-height: 70px;
         font-weight: bold;
         background: #FFFFFF -webkit-linear-gradient(left, #1dcf9f, #53ecc3) no-repeat 0 0;
-        background-size: 0;
+        background-size: 0 100%;
         -webkit-background-clip: text;
         color: transparent;
       }
