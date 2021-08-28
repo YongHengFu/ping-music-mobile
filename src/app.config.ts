@@ -4,7 +4,8 @@ export default {
     'pages/video/video',
     'pages/personal/personal',
     'pages/playView/playView',
-    'pages/playList/playList'
+    'pages/playList/playList',
+    'pages/leaderboard/leaderboard'
   ],
   requiredBackgroundModes: ['audio'],
   window: {

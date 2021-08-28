@@ -75,3 +75,11 @@ export function getSimiPlayList(data:object) {
     data
   })
 }
+
+// 获取排行榜信息
+export function getTopList() {
+  return request({
+    url: '/toplist/detail',
+    method: 'get'
+  })
+}

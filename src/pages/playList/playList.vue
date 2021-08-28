@@ -159,7 +159,6 @@ export default defineComponent({
           }
           canvas.width = 100
           canvas.height = 100
-          console.log(canvas)
           const context = canvas.getContext('2d')
           const img = canvas.createImage()
           img.src = imageUrl

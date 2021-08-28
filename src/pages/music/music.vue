@@ -20,7 +20,7 @@
           <img :src="daily" :class="$style.image">
           <span :class="$style.text">每日30首</span>
         </div>
-        <div :class="$style.item">
+        <div :class="$style.item" @click="openRank">
           <img :src="rank" :class="$style.image">
           <span :class="$style.text">排行榜</span>
         </div>
@@ -107,6 +107,11 @@ export default defineComponent({
         refreshState.value = false
       }, 1000)
     }
+    const openRank = () => {
+      Taro.navigateTo({
+        url: '/pages/leaderboard/leaderboard'
+      })
+    }
 
     onMounted(() => {
       getRcmdPlayListData()
@@ -123,7 +128,8 @@ export default defineComponent({
       refreshState,
       bannerUpdate,
       openList,
-      refresh
+      refresh,
+      openRank
     }
   }
 })
