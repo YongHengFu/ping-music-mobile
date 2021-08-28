@@ -1,8 +1,8 @@
 <template>
+  <canvas id="headMask" type="2d" :class="$style.mask" />
   <div :class="$style['page-play-list']" @scroll="pageScroll">
     <NavigationBar :title="navigationTitle" :color="navigationColor" />
     <div :class="$style.head" :style="headStyle">
-      <canvas id="headMask" type="2d" :class="$style.mask" />
       <div :class="$style.wrapper">
         <div :class="$style.cover">
           <img :src="listInfo?.coverImgUrl+'?param=500y500'" :class="$style.image">
@@ -90,7 +90,7 @@ export default defineComponent({
         if (res.code === 200) {
           listInfo.value = res.playlist
           getMusicList(res.playlist.trackIds)
-          getPrimaryColor(`${res.playlist.coverImgUrl}?param=500y500`)
+          getPrimaryColor(`${res.playlist.coverImgUrl}?param=100y100`)
         }
       })
     }
@@ -157,12 +157,15 @@ export default defineComponent({
           if (!canvas) {
             return
           }
+          canvas.width = 100
+          canvas.height = 100
+          console.log(canvas)
           const context = canvas.getContext('2d')
           const img = canvas.createImage()
           img.src = imageUrl
           img.onload = () => {
-            context.drawImage(img, 0, 0, 500, 500)
-            const data = context.getImageData(0, 0, 500, 500).data
+            context.drawImage(img, 0, 0, 100, 100)
+            const data = context.getImageData(0, 0, 100, 100).data
             const palette = colorThief(data)
               .palette(3)
               .getHex()
@@ -244,17 +247,17 @@ export default defineComponent({
 </script>
 
 <style module lang="scss">
+.mask{
+  position: absolute;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+}
 .page-play-list{
   .head{
     padding: 0 7vw;
     position: relative;
     overflow: hidden;
-    .mask{
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      visibility: hidden;
-    }
     .wrapper{
       padding: 50px 0;
       display: flex;

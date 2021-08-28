@@ -1,8 +1,8 @@
 <template>
+  <canvas id="mask" type="2d" :class="$style.mask" />
   <div :class="$style['page-play-view']">
-    <div :class="$style['mask-wrapper']">
+    <div :class="$style['mask-wrapper']" :style="maskBackStyle">
       <div :class="$style['mask-color']" :style="maskStyle" />
-      <canvas id="mask" type="2d" :class="$style.mask"/>
     </div>
     <NavigationBar :curr-tab-index="currTabIndex" @changeTab="changeTab" />
     <swiper :class="$style.components" :style="pageStyle" :vertical="stopChange" :duration="300" :current="currTabIndex" @Change="changeTabIndex">
@@ -53,6 +53,9 @@ export default defineComponent({
     const currIndex = computed(() => store.state.currIndex)
     const currLyric = ref('')
     const musicInfo = ref({} as any)
+    const maskBackStyle = ref({
+      'background': ''
+    })
     const maskStyle = ref({
       'background': ''
     })
@@ -83,12 +86,16 @@ export default defineComponent({
           if (!canvas) {
             return
           }
+          const width = Taro.getSystemInfoSync().screenWidth
+          const height = Taro.getSystemInfoSync().screenHeight
+          canvas.width = width
+          canvas.height = height
           const context = canvas.getContext('2d')
           const image = canvas.createImage()
           image.src = musicInfo.value.album.picUrl + '?param=50y50'
           image.onload = () => {
-            context.drawImage(image, 0, 0, 300, 150)
-            const data = context.getImageData(0, 0, Taro.getSystemInfoSync().screenWidth, Taro.getSystemInfoSync().screenHeight).data
+            context.drawImage(image, 0, 0, width, height)
+            const data = context.getImageData(0, 0, width, height).data
             const palette = colorThief(data)
               .color(2)
               .get()
@@ -128,12 +135,14 @@ export default defineComponent({
       if (musicList) {
         musicInfo.value = musicList[currIndex.value]
         totalTime.value = musicList[currIndex.value].duration
+        maskBackStyle.value.background = `url(${musicInfo.value.album.picUrl + '?param=100y100'})`
       }
       player.audio.onCanplay(() => {
         const musicList = Taro.getStorageSync('musicList')
         if (musicList) {
           musicInfo.value = musicList[currIndex.value]
           getPrimaryColor()
+          maskBackStyle.value.background = `url(${musicInfo.value.album.picUrl + '?param=100y100'})`
         }
         if (musicList) {
           totalTime.value = musicList[currIndex.value].duration
@@ -153,6 +162,7 @@ export default defineComponent({
       })
     })
     return {
+      maskBackStyle,
       maskStyle,
       pageStyle,
       state,
@@ -175,6 +185,10 @@ export default defineComponent({
 </script>
 
 <style module lang="scss">
+.mask{
+  width: 0;
+  height: 0;
+}
 .page-play-view{
   width: 100%;
   height: 100%;
@@ -187,16 +201,10 @@ export default defineComponent({
     z-index: -1;
     overflow: hidden;
     background: #323232;
-    .mask{
-      width: 100vw;
-      height: 100vh;
-      filter: blur(30px);
-      background-size:100% 100%;
-      position: absolute;
-      left: 0px;
-      top: 0;
-      z-index: -1;
-    }
+    filter: blur(30px);
+    transform: scale(1.2);
+    background-repeat: no-repeat;
+    background-size:100%;
     .mask-color{
       width: 100vw;
       height: 100vh;
