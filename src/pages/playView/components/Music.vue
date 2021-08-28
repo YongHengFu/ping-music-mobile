@@ -1,16 +1,17 @@
 <template>
   <div :class="$style['page-music']">
     <img :src="`${musicInfo?.album?.picUrl}?param=500y500`" :class="$style.cover" mode="widthFix">
-    <div :class="$style.info">
-      <div>
-        <span :class="$style['music-name']">{{ musicInfo?.name }}</span>
+    <div id="info" :class="$style.info">
+      <div id="scrollName" :class="[$style['name-wrapper'],{[$style['name-wrapper-scroll']]:musicNameStyle['padding-right']!=='0px'}]">
+        <span :class="$style['music-name']" :style="musicNameStyle">{{ musicInfo?.name }}</span>
+        <span v-if="musicNameStyle['padding-right']!=='0px'" :class="$style['music-name']" :style="musicNameStyle">{{ musicInfo?.name }}</span>
       </div>
       <div :class="$style.artists">
         <span v-for="(item,index) of musicInfo?.artist" :key="item.id">
           {{ item.name }}{{ index!==musicInfo?.artist.length-1?'/':'' }}
         </span>
       </div>
-      <span :class="$style.lyric">{{currLyric}}</span>
+      <span :class="$style.lyric">{{ currLyric }}</span>
     </div>
     <div :class="$style.control">
       <ProgressBar :class="$style['progress-bar']" :curr-time="currTime" :total-time="totalTime" @moving="moving" @jump="jumpTo" />
@@ -27,7 +28,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted, watch, nextTick } from 'vue'
+import Taro from '@tarojs/taro'
 import MusicList from '@/components/MusicList.vue'
 import ProgressBar from '@/pages/playView/components/ProgressBar.vue'
 import IconPlay from '@/assets/icons/play.png'
@@ -48,7 +50,10 @@ export default defineComponent({
     ProgressBar
   },
   props: {
-    musicInfo: Object,
+    musicInfo: {
+      type: Object,
+      required: true
+    },
     state: {
       type: Boolean,
       required: true
@@ -67,7 +72,22 @@ export default defineComponent({
     }
   },
   setup(props, ctx) {
+    const musicNameStyle = ref({
+      'padding-right': `${0}px`
+    })
     const showList = ref(false)
+
+    let musicId = props.musicInfo.id
+
+    watch(props, () => {
+      if (props.musicInfo.id !== musicId) {
+        musicId = props.musicInfo.id
+        musicNameStyle.value['padding-right'] = '0px'
+        Taro.nextTick(() => {
+          isScroll()
+        })
+      }
+    })
 
     const play = () => {
       player.audio.play()
@@ -93,7 +113,32 @@ export default defineComponent({
       ctx.emit('jump', jumpTime)
     }
 
+    const isScroll = () => {
+      const selectorQuery = Taro.createSelectorQuery()
+      selectorQuery.select('#scrollName').fields({ size: true })
+        .exec((res) => {
+          const selectorQuery = Taro.createSelectorQuery()
+          selectorQuery.select('#info').fields({ size: true })
+            .exec((res2) => {
+              if (res[0].width > res2[0].width) {
+                setTimeout(() => {
+                  musicNameStyle.value['padding-right'] = `30vw`
+                }, 300)
+              } else {
+                musicNameStyle.value['padding-right'] = '0px'
+              }
+            })
+        })
+    }
+
+    onMounted(() => {
+      Taro.nextTick(() => {
+        isScroll()
+      })
+    })
+
     return {
+      musicNameStyle,
       IconPlay,
       IconPause,
       IconNext,
@@ -131,15 +176,29 @@ export default defineComponent({
   .info{
     width: calc(100% - 100px);
     margin: 30px auto;
+    .name-wrapper{
+      display: inline-block;
+    }
+    .name-wrapper-scroll{
+      animation: scroll 10s infinite linear;
+    }
+    @keyframes scroll {
+      0%{
+        transform: translateX(0);
+      }
+      90%{
+        transform: translateX(-50%);
+      }
+      100%{
+        transform: translateX(-50%);
+      }
+    }
     .music-name{
-      width: 100%;
-      display: block;
+      display: inline-block;
       font-size: 46px;
       font-weight: bold;
       color: #fff;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      //padding-right: calc(100vw - 30px);
     }
     .artists{
       display: flex;
