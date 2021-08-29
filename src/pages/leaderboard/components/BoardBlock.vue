@@ -1,8 +1,8 @@
 <template>
-  <canvas id="boardCover" type="2d" :class="$style['board-cover']" />
+  <canvas :id="'boardCover'+data.id" type="2d" :class="$style['board-cover']" />
   <div :class="$style['board-wrapper']" :style="wrapperStyle">
     <div :class="$style.info">
-<!--      <span :class="$style.name">{{ data.name }}</span>-->
+      <!--      <span :class="$style.name">{{ data.name }}</span>-->
       <span v-for="(item,index) of data.tracks" :key="item.first" :class="$style.item">{{ index+1 }}. {{ item.first }}-{{ item.second }}</span>
     </div>
     <img :src="`${data.coverImgUrl}?param=300y300`" :class="$style.cover">
@@ -29,7 +29,7 @@ export default defineComponent({
 
     const getPrimaryColor = (imageUrl:string) => {
       const selectorQuery = Taro.createSelectorQuery()
-      selectorQuery.select('#boardCover').fields({ node: true, size: true })
+      selectorQuery.select('#boardCover' + props.data.id).fields({ node: true, size: true })
         .exec((res) => {
           const canvas = res[0]?.node
           if (!canvas) {
